@@ -57,7 +57,7 @@ while true do
 			end
 		else if (!pt.(i).x<0. ) then
 			begin
-			pt.(i).x <- 0.;
+			!pt.(i).x <- 0.;
 			!pt.(i).oldx<- !pt.(i).x +. !vx *. rebond;
 			end;
 		if (!pt.(i).y>600. ) then
