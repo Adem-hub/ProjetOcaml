@@ -1,7 +1,7 @@
 #load "graphics.cma";;
 open Graphics;;
 open Array;;
-(* Un petit test *)
+
 open_graph "";
 set_color (rgb 255 0 255);;
 let cosh x = let expo = exp(x) in (expo+.(1./.expo))/.2.;;
@@ -23,14 +23,6 @@ let dx = d_xy x1 x2;;
 let dy = d_xy y1 y2;;
 
 let mx= moy_xy x1 x2;;
-
-
-let trace x1 y1 x2 y2 =
-	let b = y1-(y2-y1)*x1/(x2-x1) in
-		for x = x1 to x2 do
-			let y = (y2-y1)*x/(x2-x1) + b in
-				plot x y
-		done;;
 
 type coordonnees= {x:int;y:int;oldx:int;oldy:int};;
 type 'a listeCoords = {mutable taille:int; mutable tab:  'a array};;
@@ -66,14 +58,15 @@ let c=y1-.a*.cosh((x1-.b)/.a);;
 
 let x=ref x1;;
 let y= ref y1;;
-let ddx=0.1;;
+let ddx=6.;;
 
 let tableauCoords = {taille=2;tab=[| {x = (int_of_float(x1)) ;y = int_of_float(y1); oldx = int_of_float(x1 -.1.); oldy = int_of_float(y1 -.1.)};{x = int_of_float(x2); y = int_of_float(y2); oldx = int_of_float(x2 -.1.); oldy = int_of_float(y2 -.1.)}|]} in
 if ((!l)**2.)>=(dx**2.+.dy**2.) then
 	while (!x<=x2) do
-	  plot (int_of_float !x) (int_of_float !y);
+	  moveto (int_of_float(!x)) (int_of_float(!y));
 	  y:= a*.cosh((!x-.b)/.a)+.c;
 	  x:= !x+.ddx;
+	  lineto (int_of_float(!x)) (int_of_float(!y));
 	  ajoute tableauCoords {x=(int_of_float !x) ; y = (int_of_float !y) ; oldx=int_of_float (!x -.1.) ; oldy = int_of_float (!y -.1.)};
 	  done
 else trace (int_of_float(x1)) (int_of_float(y1)) (int_of_float(x2)) (int_of_float(y2));;
