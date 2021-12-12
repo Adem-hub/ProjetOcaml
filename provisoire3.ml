@@ -2,17 +2,10 @@
 #load "unix.cma";;
 open Graphics;;
 open Array;;
-open_graph "800x600";;
 
 type point   = {mutable x: float;  mutable y: float; mutable oldx:float; mutable oldy:float};;
 type stick = {mutable debut: point;  mutable fin: point; mutable taille:float};;
 let dist (x1,y1) (x2,y2) = sqrt((x1-.x2)**2. +. (y1-.y2)**2.);;
-let trace x1 y1 x2 y2 =
-	let b = y1-(y2-y1)*x1/(x2-x1) in
-		for x = x1 to x2 do
-			let y = (y2-y1)*x/(x2-x1) + b in
-				plot x y
-		done;;
 
 let update lien = 
 	let dx= lien.fin.x -. lien.debut.x 
@@ -32,12 +25,12 @@ let update lien =
 set_color (rgb 255 0 255);;
 
 
+open_graph "800x600";
 auto_synchronize false;
 display_mode false;
-
-let vx= ref 0.;
-and vy =ref 0.;
-and rebond=0.5 
+let vx     = ref 0.
+and vy     = ref 0.
+and rebond = 1. 
 and pt = ref [|{x = 100.; y = 100.;oldx=99.;oldy=99.};
 					{x = 200.; y = 200.;oldx=199.;oldy=199.};
 					{x = 300.; y = 100.;oldx=299.;oldy=99.}|] in
@@ -65,19 +58,17 @@ while true do
 		else if(!pt.(i).y<0. ) then
 			begin
 			!pt.(i).y <- 0.;
-			!pt.(i).oldy<- !pt.(i).y +. !vy *. rebond;
+			!pt.(i).oldy <- !pt.(i).y +. !vy *. rebond;
 			end;
 		draw_circle (int_of_float !pt.(i).x) (int_of_float !pt.(i).y) 20;
 		fill_circle (int_of_float !pt.(i).x) (int_of_float !pt.(i).y) 20;
-		synchronize ();
 		moveto (int_of_float st.debut.x) (int_of_float st.debut.y);
 		lineto (int_of_float st.fin.x) (int_of_float st.fin.y);
-		clear_graph();
 		if i=0 then st.debut<- !pt.(i) else  st.fin<- !pt.(i);
 	done;
-	print_float st.debut.x;
+	synchronize ();
+	clear_graph();
 	update st;
-	print_float st.debut.x;
 	!pt.(0) <- st.debut ;
 	!pt.(1) <- st.fin;
 	st.taille <-  dist ((!pt.(0)).x,(!pt.(0)).y) ((!pt.(1)).x,(!pt.(1)).y);
