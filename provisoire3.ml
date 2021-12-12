@@ -44,9 +44,6 @@ and pt = ref [|{x = 100.; y = 100.;oldx=99.;oldy=99.};
 let st = {debut = (!pt).(0) ; fin= (!pt).(1) ; taille= dist ((!pt.(0)).x,(!pt.(0)).y) ((!pt.(1)).x,(!pt.(1)).y)}in
 while true do
 	for i=0 to (length !pt)-2 do
-		set_color (rgb 255 255 255);
-		fill_circle (int_of_float !pt.(i).x) (int_of_float !pt.(i).y) 20;
-		set_color (rgb 255 0 255);
 		vx:= !pt.(i).x -. !pt.(i).oldx ;
 		vy:= !pt.(i).y -. !pt.(i).oldy ;
 		!pt.(i) <- {x= !pt.(i).x +. !vx; y= !pt.(i).y +. !vy -. 0.01; oldx= !pt.(i).x; oldy= !pt.(i).y  };
@@ -75,6 +72,7 @@ while true do
 		synchronize ();
 		moveto (int_of_float st.debut.x) (int_of_float st.debut.y);
 		lineto (int_of_float st.fin.x) (int_of_float st.fin.y);
+		clear_graph();
 		if i=0 then st.debut<- !pt.(i) else  st.fin<- !pt.(i);
 	done;
 	print_float st.debut.x;
