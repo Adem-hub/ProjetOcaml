@@ -66,8 +66,6 @@ while true do
 		
 		moveto (int_of_float st.(i/2).debut.x) (int_of_float st.(i/2).debut.y);
 		lineto (int_of_float st.(i/2).fin.x) (int_of_float st.(i/2).fin.y);
-		draw_circle (int_of_float !pt.(i).x) (int_of_float !pt.(i).y) 1;
-		fill_circle (int_of_float !pt.(i).x) (int_of_float !pt.(i).y) 1;
 		
 		if (i != 0) && (i != (length !pt)-1) then
 		begin st.(i-1).fin<- !pt.(i); st.(i).debut<- !pt.(i) end;
