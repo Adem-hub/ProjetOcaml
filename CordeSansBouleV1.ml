@@ -62,7 +62,7 @@ while true do
 		vx:= !pt.(i).x -. !pt.(i).oldx ;
 		vy:= !pt.(i).y -. !pt.(i).oldy ;
 		if i != 0 then
-		!pt.(i) <- {x= !pt.(i).x +. !vx; y= !pt.(i).y +. !vy -. 0.1; oldx= !pt.(i).x; oldy= !pt.(i).y  };
+		!pt.(i) <- {x= !pt.(i).x +. !vx; y= !pt.(i).y +. !vy -. 0.01; oldx= !pt.(i).x; oldy= !pt.(i).y  };
 		
 		moveto (int_of_float st.(i/2).debut.x) (int_of_float st.(i/2).debut.y);
 		lineto (int_of_float st.(i/2).fin.x) (int_of_float st.(i/2).fin.y);
