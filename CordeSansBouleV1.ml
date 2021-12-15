@@ -7,7 +7,7 @@ open_graph " 800x600";;
 
 type point   = {mutable x: float;  mutable y: float; mutable oldx:float; mutable oldy:float};;
 type stick = {mutable debut: point;  mutable fin: point; mutable taille:float};;
-type 'a maliste = {mutable taille:int; mutable tab:  'a array};;
+type 'a maliste = {mutable size:int; mutable tab:  'a array};;
 let dist (x1,y1) (x2,y2) = sqrt((x1-.x2)**2. +. (y1-.y2)**2.);;
 
 let update lien = 
@@ -26,28 +26,28 @@ let update lien =
 			lien.(i).fin.y   <- (lien.(i).fin.y) +. decY;
 		done;;
 
-let ajoute liste valeur = let prov= make (liste.taille*2) valeur and taille=liste.taille in
-								  if length (liste.tab) > liste.taille then begin
+let ajoute liste valeur = let prov= make (liste.size*2) valeur and taille=liste.size in
+								  if length (liste.tab) > liste.size then begin
 								  liste.tab.(taille)<-valeur;
-								  liste.taille<-liste.taille+1;
+								  liste.size<-liste.size+1;
 								  end
 								  else begin 
-								  for i=0 to (liste.taille)-1 do
+								  for i=0 to (liste.size)-1 do
 										prov.(i)<- liste.tab.(i);
 										done;
-									liste.taille<-liste.taille+1;
+									liste.size<-liste.size+1;
 									prov.(taille)<-valeur;
 									liste.tab<-prov;
 									end;;
 
-let makepttab = let provtab = {taille=1;  tab= [|{x = 200.; y = 400.;oldx=199.;oldy=399.}|]} in
+let makepttab = let provtab = {size=1;  tab= [|{x = 200.; y = 400.;oldx=199.;oldy=399.}|]} in
 							let point = provtab.tab.(0) in
-							for i=1 to 40 do
+							for i=1 to 50 do
 								ajoute provtab {x=point.x;y=point.y-. float_of_int(5*i);oldx=point.oldx;oldy=point.oldy -. float_of_int(5*i)}
-							done;provtab.tab;;
+							done;provtab;;
 
-let makesttab pttab= let p = {taille=1;  tab= [|{debut = (!pttab).(0) ; fin= (!pttab).(1) ; taille= dist ((!pttab.(0)).x,(!pttab.(0)).y) ((!pttab.(1)).x,(!pttab.(1)).y)}|]} in
-									 for i=1 to (length !pttab)-2  do 
+let makesttab pttab len= let p = {size=1;  tab= [|{debut = (!pttab).(0) ; fin= (!pttab).(1) ; taille= dist ((!pttab.(0)).x,(!pttab.(0)).y) ((!pttab.(1)).x,(!pttab.(1)).y)}|]} in
+									 for i=1 to len-2  do 
 										ajoute p {debut = (!pttab).(i) ; fin= (!pttab).(i+1) ; taille= dist ((!pttab.(i)).x,(!pttab.(i)).y) ((!pttab.(i+1)).x,(!pttab.(i+1)).y)};
 										done;p.tab;;
 
@@ -55,14 +55,15 @@ auto_synchronize false;;
 display_mode false;;
 let vx     = ref 0.
 and vy     = ref 0.
-and pt = ref makepttab in
-let st = makesttab pt in
+and pt = ref (makepttab.tab)
+and ty = makepttab.size in
+let st = makesttab pt ty in
 while true do
 	for i=0 to (length !pt)-1 do
 		vx:= !pt.(i).x -. !pt.(i).oldx ;
 		vy:= !pt.(i).y -. !pt.(i).oldy ;
 		if i != 0 then
-		!pt.(i) <- {x= !pt.(i).x +. !vx; y= !pt.(i).y +. !vy -. 0.01; oldx= !pt.(i).x; oldy= !pt.(i).y  };
+		!pt.(i) <- {x= !pt.(i).x +. !vx; y= !pt.(i).y +. !vy -. 0.001; oldx= !pt.(i).x; oldy= !pt.(i).y  };
 		
 		moveto (int_of_float st.(i/2).debut.x) (int_of_float st.(i/2).debut.y);
 		lineto (int_of_float st.(i/2).fin.x) (int_of_float st.(i/2).fin.y);
