@@ -4,27 +4,6 @@ open Graphics;;
 open Array;;
 open_graph " 800x600";;
 
-
-type point   = {mutable x: float;  mutable y: float; mutable oldx:float; mutable oldy:float};;
-type stick = {mutable debut: point;  mutable fin: point; mutable taille:float};;
-let dist (x1,y1) (x2,y2) = sqrt((x1-.x2)**2. +. (y1-.y2)**2.);;
-
-let update lien = 
-	for i=0 to (length lien)-1 do 
-		let dx= lien.(i).fin.x -. lien.(i).debut.x 
-		and dy= lien.(i).fin.y -. lien.(i).debut.y in
-		let distance = sqrt( dx**2. +. dy**2.) in
-		let diff = lien.(i).taille -. distance in 
-		let pourcent = diff /. distance /.2. in
-		let decX = dx *. pourcent
-		and decY = dy *. pourcent in
-			if i!=0 then begin
-			lien.(i).debut.x <- (lien.(i).debut.x) -. decX;
-			lien.(i).debut.y <- (lien.(i).debut.y) -. decY end;
-			lien.(i).fin.x   <- (lien.(i).fin.x) +. decX;
-			lien.(i).fin.y   <- (lien.(i).fin.y) +. decY;
-		done;;
-
 let lecture_png nomFichier height width=
 	let fichier  = open_in nomFichier
 	and couleurs = Array.make_matrix height width transp in
@@ -48,57 +27,103 @@ let raw_image = lecture_png "C:\\Users\\abenr\\OneDrive\\Bureau\\ProjetOcaml-mai
 
 let image = make_image raw_image;;
 
+type point   = {mutable x: float;  mutable y: float; mutable oldx:float; mutable oldy:float};;
+type stick = {mutable debut: point;  mutable fin: point; mutable taille:float};;
+type 'a maliste = {mutable size:int; mutable tab:  'a array};;
+let dist (x1,y1) (x2,y2) = sqrt((x1-.x2)**2. +. (y1-.y2)**2.);;
 
+let update lien ta temps= 
+	for i=0 to ta do 
+		let dx= lien.(i).fin.x -. lien.(i).debut.x 
+		and dy= lien.(i).fin.y -. lien.(i).debut.y in
+		let distance = sqrt( dx**2. +. dy**2.) in
+		let diff = lien.(i).taille -. distance in 
+		let pourcent = diff /. distance /.2. in
+		let decX = dx *. pourcent
+		and decY = dy *. pourcent in
+			if i!=0   then begin
+			lien.(i).debut.x <- (lien.(i).debut.x) -. decX;
+			lien.(i).debut.y <- (lien.(i).debut.y) -. decY end;
+			if i!=ta || Unix.gettimeofday()-.temps>=5.  then begin 
+			lien.(i).fin.x   <- (lien.(i).fin.x) +. decX;
+			lien.(i).fin.y   <- (lien.(i).fin.y) +. decY end;
+		done;;
 
-auto_synchronize false;
-display_mode false;
-let vx     = ref 0.
-and vy     = ref 0.
-and rebond = 0.;
-and pt = ref [|{x = 100.; y = 400.;oldx=99.;oldy=399.};
-					{x = 100.; y = 350.;oldx=99.;oldy=349.};
-					{x = 100.; y = 300.;oldx=99.;oldy=299.};
-					{x = 110.; y = 250.;oldx=109.;oldy=249.};|] in
-let st = [|{debut = (!pt).(0) ; fin= (!pt).(1) ; taille= dist ((!pt.(0)).x,(!pt.(0)).y) ((!pt.(1)).x,(!pt.(1)).y)};{debut = (!pt).(1) ; fin= (!pt).(2) ; taille= dist ((!pt.(1)).x,(!pt.(1)).y) ((!pt.(2)).x,(!pt.(2)).y)} ;{debut = (!pt).(2) ; fin= (!pt).(3) ; taille= dist ((!pt.(2)).x,(!pt.(2)).y) ((!pt.(3)).x,(!pt.(3)).y)}|]in
-while true do
-	for i=0 to (length !pt)-1 do
-		vx:= !pt.(i).x -. !pt.(i).oldx ;
-		vy:= !pt.(i).y -. !pt.(i).oldy ;
-		if i != 0 then
-		!pt.(i) <- {x= !pt.(i).x +. !vx; y= !pt.(i).y +. !vy -. 0.01; oldx= !pt.(i).x; oldy= !pt.(i).y  };
-		if (!pt.(i).x>800. ) then
-			begin
-			!pt.(i).x <- 800.;
-			!pt.(i).oldx <- !pt.(i).x +. !vx *. rebond;
-			end
-		else if (!pt.(i).x<0. ) then
-			begin
-			!pt.(i).x <- 0.;
-			!pt.(i).oldx<- !pt.(i).x +. !vx *. rebond;
+let ajoute liste valeur = let prov= make (liste.size*2) valeur and taille=liste.size in
+								  if length (liste.tab) > liste.size then begin
+								  liste.tab.(taille)<-valeur;
+								  liste.size<-liste.size+1;
+								  end
+								  else begin 
+								  for i=0 to (liste.size)-1 do
+										prov.(i)<- liste.tab.(i);
+										done;
+									liste.size<-liste.size+1;
+									prov.(taille)<-valeur;
+									liste.tab<-prov;
+									end;;
+
+let makepttab = let provtab = {size=1;  tab= [|{x = 300.; y = 400.;oldx=300.;oldy=400.}|]} in
+							let point = provtab.tab.(0) in
+							for i=1 to 10 do
+								ajoute provtab {x=point.x-. float_of_int(10*i);
+													 y=point.y;
+													 oldx=point.oldx-. float_of_int(10*i);
+													 oldy=point.oldy }
+							done;provtab;;
+
+let makesttab pttab len= let p = {size=1;  tab= [|{debut = (!pttab).(0) ; fin= (!pttab).(1) ; taille= dist ((!pttab.(0)).x,(!pttab.(0)).y) ((!pttab.(1)).x,(!pttab.(1)).y)}|]} in
+									 for i=1 to len-1  do 
+										ajoute p {debut = (!pttab).(i) ;
+													 fin= (!pttab).(i+1) ;
+													 taille= dist ((!pttab.(i)).x,(!pttab.(i)).y) ((!pttab.(i+1)).x,(!pttab.(i+1)).y)};
+										done;p.tab;;
+
+let pt = ref makepttab.tab;;
+let st = makesttab pt 10;;
+pt;;
+st;;
+auto_synchronize false;;
+display_mode false;;
+let vx = ref 0.
+and vy = ref 0.
+and ti = Unix.gettimeofday()
+and cste_elastique =3
+and g= 9.81
+and dt = ref (Unix.gettimeofday())
+and pt = ref makepttab.tab and tot = makepttab.size in
+let st = makesttab pt tot in
+		while true do
+			if Unix.gettimeofday()-.(!dt)>1./.60. then begin
+				for i = 0 to tot-1  do
+					vx := (!pt.(i).x -. !pt.(i).oldx) ;
+					vy := (!pt.(i).y -. !pt.(i).oldy) ;
+					if (i != 0 && (i!=tot -1 || Unix.gettimeofday()-.ti>5. )) then begin
+						!pt.(i) <- {x = !pt.(i).x +. !vx;
+										y = !pt.(i).y +. !vy -. g*.0.01;
+										oldx = !pt.(i).x;
+										oldy = !pt.(i).y};
+						end;
+					if (i==tot-1) then begin
+						draw_image image (int_of_float (!pt.(i).x-.25.)) (int_of_float (!pt.(i).y-.25.));
+						if (Unix.gettimeofday()-.ti>=5.) then 
+						!pt.(i) <- {x = !pt.(i).x +. !vx; y = !pt.(i).y +. !vy -. 0.1*.g; oldx = !pt.(i).x; oldy = !pt.(i).y};
+						end;
+					if i!=tot-1 then begin
+					moveto (int_of_float st.(i).debut.x) (int_of_float st.(i).debut.y);
+					lineto (int_of_float st.(i).fin.x) (int_of_float st.(i).fin.y);
+					end;
+					
+					if (i != 0) && (i!= tot-1) then
+						begin st.(i - 1).fin <- !pt.(i); st.(i).debut <- !pt.(i) end;
+					if i = 0 then st.(0).debut <- !pt.(i)
+					else if  i= tot-1 then  st.(tot-2).fin <- !pt.(i);
+				done;
+				synchronize ();
+				clear_graph ();
+				for i=0 to cste_elastique do 
+					update st (tot-2) ti;
+				done;
+				dt:=Unix.gettimeofday();
 			end;
-		if (!pt.(i).y>600. ) then
-			begin
-			!pt.(i).y <- 600.;
-			!pt.(i).oldy<- !pt.(i).y +. !vy *. rebond;
-			end
-		else if(!pt.(i).y<0. ) then
-			begin
-			!pt.(i).y <- 0.;
-			!pt.(i).oldy <- !pt.(i).y +. !vy *. rebond;
-			end;
-		moveto (int_of_float st.(i/2).debut.x) (int_of_float st.(i/2).debut.y);
-		lineto (int_of_float st.(i/2).fin.x) (int_of_float st.(i/2).fin.y);
-		draw_circle (int_of_float !pt.(i).x) (int_of_float !pt.(i).y) 4;
-		fill_circle (int_of_float !pt.(i).x) (int_of_float !pt.(i).y) 4;
-		
-		if (i != 0) && (i != (length !pt)-1) then
-		begin st.(i-1).fin<- !pt.(i); st.(i).debut<- !pt.(i) end;
-		if i=0 then st.(0).debut<- !pt.(i)
-		else st.((length st)-1).fin<- !pt.(i);
-	done;
-	synchronize ();
-	clear_graph();
-	update st;
-	
-	
-done;;
+		done;;
