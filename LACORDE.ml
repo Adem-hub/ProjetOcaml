@@ -65,7 +65,7 @@ let ajoute liste valeur = let prov= make (liste.size*2) valeur and taille=liste.
 
 let makepttab = let provtab = {size=1;  tab= [|{x = 300.; y = 400.;oldx=300.;oldy=400.}|]} in
 							let point = provtab.tab.(0) in
-							for i=1 to 10 do
+							for i=1 to 30 do
 								ajoute provtab {x=point.x-. float_of_int(10*i);
 													 y=point.y;
 													 oldx=point.oldx-. float_of_int(10*i);
@@ -88,7 +88,7 @@ display_mode false;;
 let vx = ref 0.
 and vy = ref 0.
 and ti = Unix.gettimeofday()
-and cste_elastique =3
+and cste_elastique =5
 and g= 9.81
 and dt = ref (Unix.gettimeofday())
 and pt = ref makepttab.tab and tot = makepttab.size in
@@ -107,23 +107,33 @@ let st = makesttab pt tot in
 					if (i==tot-1) then begin
 						draw_image image (int_of_float (!pt.(i).x-.25.)) (int_of_float (!pt.(i).y-.25.));
 						if (Unix.gettimeofday()-.ti>=5.) then 
-						!pt.(i) <- {x = !pt.(i).x +. !vx; y = !pt.(i).y +. !vy -. 0.1*.g; oldx = !pt.(i).x; oldy = !pt.(i).y};
+							!pt.(i) <- {x = !pt.(i).x +. !vx;
+											y = !pt.(i).y +. !vy -. 0.2*.g;
+											oldx = !pt.(i).x;
+											oldy = !pt.(i).y};
 						end;
+						
 					if i!=tot-1 then begin
-					moveto (int_of_float st.(i).debut.x) (int_of_float st.(i).debut.y);
-					lineto (int_of_float st.(i).fin.x) (int_of_float st.(i).fin.y);
+						moveto (int_of_float st.(i).debut.x) (int_of_float st.(i).debut.y);
+						lineto (int_of_float st.(i).fin.x) (int_of_float st.(i).fin.y);
 					end;
-					
-					if (i != 0) && (i!= tot-1) then
-						begin st.(i - 1).fin <- !pt.(i); st.(i).debut <- !pt.(i) end;
-					if i = 0 then st.(0).debut <- !pt.(i)
-					else if  i= tot-1 then  st.(tot-2).fin <- !pt.(i);
+					   
+					if (i != 0) && (i!= tot-1) then begin 
+								st.(i - 1).fin <- !pt.(i);
+								st.(i).debut <- !pt.(i) end;
+					if i = 0 then 
+						st.(0).debut <- !pt.(i)
+					else if  i= tot-1 then
+						st.(tot-2).fin <- !pt.(i);
+						
 				done;
+				
 				synchronize ();
 				clear_graph ();
 				for i=0 to cste_elastique do 
 					update st (tot-2) ti;
 				done;
 				dt:=Unix.gettimeofday();
+				
 			end;
 		done;;
