@@ -13,21 +13,21 @@ let g            = 9.81;;
 
 (* Types *)
 
-type img    = {data   : image;
-					height : int;
-					width  : int};;
+type img  = {data   : image;
+			    height : int;
+				 width  : int};;
 					
-type gif    = {imgs   : img array;
-					frames : int};;
-					
-type vct    = {mutable x    : float;
-					mutable y    : float;
-					mutable oldx : float;
-					mutable oldy : float};;
+type gif  = {imgs   : img array;
+				 frames : int};;
 
-type lien   = {mutable debut  : point;
-					mutable fin    : point;
-					mutable taille : float};;
+type vct  = {mutable x    : float;
+			    mutable y    : float;
+				 mutable oldx : float;
+				 mutable oldy : float};;
+
+type lien = {mutable debut  : vct;
+			    mutable fin    : vct;
+				 mutable taille : float};;
 					
 type 'a tableau_dynamique = {size : unit -> int;
 									  id   : int -> 'a;
@@ -91,6 +91,19 @@ let load_brc_set frames relative_link =
 (* Fonctions outils *)
 
 let distance vct1 vct2 = sqrt((vct1.x -. vct2.x)**2. +. (vct1.y -. vct2.y)**2.);;
+
+(* renvoie l'id de bout touché et -1 si aucun n'est touché*)
+let rope_touch rope x y =
+	let id = ref (-1) in
+	for i = 0 to rope.size() - 1 do
+		let x1 = (rope.id (i)).debut.x
+		and y1 = (rope.id (i)).debut.y
+		and x2 = (rope.id (i)).fin.x
+		and y2 = (rope.id (i)).fin.y in
+		if (x1 -. x) *. (x2 -. x) <= 0. && (y1 -. y) *. (y2 -. y) <= 0. then
+			id := i;
+	done;
+	!id;;
 
 (* Main *)
 
