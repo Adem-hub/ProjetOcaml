@@ -59,42 +59,6 @@ let make_tab default =
 		 add  =  ajoute};;
 
 
-(* Fonctions d'importation *)
-
-(* nécessite la fenêtre utilisée déjà ouverte *)
-let load_brc relative_link =
-	let file  = open_in (working_path ^ relative_link ^ ".brc") in
-	let width, height = Scanf.sscanf (input_line file) "%dx%d" (fun a b -> (a, b)) in
-	let pre_image = Array.make_matrix width height transp in
-		for i = 0 to width - 1 do
-			for j = 0 to height - 1 do
-				let line = input_line file in
-				let r, g, b, a = Scanf.sscanf line "%d %d %d %d" (fun a b c d -> (a, b, c, d)) in
-				if a < 125 then
-					begin
-					pre_image.(i).(j) <- (transp);
-					end
-				else
-					begin
-					pre_image.(i).(j) <- (rgb r g b);
-					end;
-			done;
-			chargement ((float_of_int i) /. (float_of_int (width-1))) (relative_link ^ ".brc");
-  		done;
-  		{data = make_image pre_image; height = height; width = width};;
-
-(* nécessite la fenêtre utilisée déjà ouverte *)
-let load_brc_set frames relative_link =
-	let empty_image = {data = make_image [|[|-1|]|]; height = 0; width = 0} in
-	let gif_image   = {imgs   = Array.make frames empty_image;
-						    frames = frames} in
-	for i = 1 to frames do
-		let path      = relative_link ^ ("-" ^ (string_of_int i)) in
-		gif_image.imgs.(i-1) <- load_brc path;
-	done;
-	gif_image;;
-
-
 (* Fonctions outils *)
 
 let distance vct1 vct2 = sqrt((vct1.x -. vct2.x)**2. +. (vct1.y -. vct2.y)**2.);;
@@ -136,22 +100,56 @@ let chargement pourcentage fichier =
 	moveto 100 650;
 	draw_string "of smell. But something still bothers him; he hasn't eaten in a while.";
 	moveto 100 600;
-	draw_string "This is the story of Marcus a toddler dinosaure looking for is dinner.";
+	draw_string "He starts looking around and arrives near a montain. There, Marcus was";
 	moveto 100 550;
-	draw_string "He starts looking around and arrives near a montage. There, Marcus was";
-	moveto 100 500;
 	draw_string "surprised to see a wood escalator. Were escalators growing in trees,";
-	moveto 100 450;
+	moveto 100 500;
 	draw_string "perhaps not it was a sign of life. Marcus uses it to climb the montane";
-	moveto 100 400;
+	moveto 100 450;
 	draw_string "and see the beautiful old house where you live. He knocks on the door.";
-	moveto 100 350;
+	moveto 100 400;
 	draw_string "You open and see this desperate dinosaur. You grab your magic wand, which";
-	moveto 100 300;
+	moveto 100 350;
 	draw_string "can cut any rope at any distance, and help him get a pleasant dinner.";
 	let charge = int_of_float (float_of_int largeur *. pourcentage) in
 	fill_rect 0 0 charge 20;
 	synchronize ();;
+
+
+(* Fonctions d'importation *)
+
+(* nécessite la fenêtre utilisée déjà ouverte *)
+let load_brc relative_link =
+	let file  = open_in (working_path ^ relative_link ^ ".brc") in
+	let width, height = Scanf.sscanf (input_line file) "%dx%d" (fun a b -> (a, b)) in
+	let pre_image = Array.make_matrix width height transp in
+		for i = 0 to width - 1 do
+			for j = 0 to height - 1 do
+				let line = input_line file in
+				let r, g, b, a = Scanf.sscanf line "%d %d %d %d" (fun a b c d -> (a, b, c, d)) in
+				if a < 125 then
+					begin
+					pre_image.(i).(j) <- (transp);
+					end
+				else
+					begin
+					pre_image.(i).(j) <- (rgb r g b);
+					end;
+			done;
+			chargement ((float_of_int i) /. (float_of_int (width-1))) (relative_link ^ ".brc");
+  		done;
+  		{data = make_image pre_image; height = height; width = width};;
+
+(* nécessite la fenêtre utilisée déjà ouverte *)
+let load_brc_set frames relative_link =
+	let empty_image = {data = make_image [|[|-1|]|]; height = 0; width = 0} in
+	let gif_image   = {imgs   = Array.make frames empty_image;
+						    frames = frames} in
+	for i = 1 to frames do
+		let path      = relative_link ^ ("-" ^ (string_of_int i)) in
+		gif_image.imgs.(i-1) <- load_brc path;
+	done;
+	gif_image;;
 
 
 (* Main *)
@@ -175,17 +173,18 @@ let main =
 	and id    = ref 0
 	and time1 = ref (Unix.gettimeofday ())
 	and time2 = ref (Unix.gettimeofday ()) in
-		fill_rect 0 0 largeur hauteur;
-		synchronize ();
+		set_color red;
 		(* boucle du jeu *)
 		while true do
 			draw_image back.data 0 0;
 			let frame = !id mod (gifs.(!mode)).frames 
 			and x     = if !mode = 2 then 145 else 160
 			and y     = if !mode = 2 then 50 else 70 in
-			draw_image (gifs.(!mode)).imgs.(frame).data x y;
+				draw_image (gifs.(!mode)).imgs.(frame).data x y;
 			draw_image ball.data 370 800;
 			draw_image front.data 0 0;
+			let x_mouse, y_mouse = mouse_pos () in
+				fill_circle x_mouse y_mouse 5;
 			if (Unix.gettimeofday ()) -. !time1 > 0.10 then
 				begin
 				id    := (!id + 1) mod 20;
