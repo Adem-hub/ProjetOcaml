@@ -32,9 +32,10 @@ type lien = {mutable debut  : vct;
 			    mutable fin    : vct;
 				 mutable taille : float};;
 					
-type 'a tableau_dynamique = {size : unit -> int;
-									  id   : int -> 'a;
-									  add  : 'a -> unit};;
+type 'a tableau_dynamique = {size   : unit -> int;
+									  id     : int  -> 'a;
+									  add    : 'a   -> unit;
+									  remove : int  -> unit};;
 
 (* init pour le tableau dynamique : default ne sera pas dans le tableau *)
 let make_tab default =
@@ -54,9 +55,15 @@ let make_tab default =
 			support := new_support;
 			end;
 		taille := !taille + 1;
-	in {size = (fun () -> !taille);
-		 id   = (fun i -> if i < !taille then !support.(i) else failwith "Index out of range");
-		 add  =  ajoute};;
+	and supprime indice = 
+		for i = indice to ((!taille) - 2) do
+			(!support).(i) <- (!support).(i+1);
+		done;
+		taille := !taille -1;
+	in {size   = (fun () -> !taille);
+		 id     = (fun i -> if i < !taille then !support.(i) else failwith "Index out of range");
+		 add    =  ajoute;
+		 remove =  supprime};;
 
 
 (* Fonctions outils *)
