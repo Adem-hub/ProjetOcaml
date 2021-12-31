@@ -98,10 +98,10 @@ let out_screen x y =
 	!test;;
 
 let touch_marcus x y =
-	let xi = (float_of_int marcus_x) -. 75.
-	and yi = (float_of_int marcus_y) -. 75.
-	and xf = (float_of_int marcus_x) +. 75.
-	and yf = (float_of_int marcus_y) +. 75. in
+	let xi = (float_of_int marcus_x) -. 90.
+	and yi = (float_of_int marcus_y) -. 90.
+	and xf = (float_of_int marcus_x) +. 90.
+	and yf = (float_of_int marcus_y) +. 90. in
 	if (xi -. x) *. (xf -. x) <= 0. && (yi -. y) *. (yf -. y) <= 0. then
 		true
 	else
@@ -193,40 +193,95 @@ let main =
 	display_mode false;
 	(* écran de chargement *)
 	chargement 0. " ";
-	let gif1  = load_brc_set 5 "Images\\Dragon\\Win"
-	and gif2  = load_brc_set 5 "Images\\Dragon\\Waiting"
-	and gif3  = load_brc_set 4 "Images\\Dragon\\Loose"
-	and ball  = load_brc "Images\\Ball\\Test"
-	and back  = load_brc "Images\\Decor\\Back"
-	and front = load_brc "Images\\Decor\\Front" in
-	let gifs  = [|gif1; gif2; gif3|]
-	and mode  = ref 0
-	and id    = ref 0
-	and time1 = ref (Unix.gettimeofday ())
-	and time2 = ref (Unix.gettimeofday ()) in
-		set_color red;
+	let gif1   = load_brc_set 5 "Images\\Dragon\\Win"
+	and gif2   = load_brc_set 5 "Images\\Dragon\\Waiting"
+	and gif3   = load_brc_set 4 "Images\\Dragon\\Loose"
+	and ball   = load_brc "Images\\Ball\\Test"
+	and back   = load_brc "Images\\Decor\\Back"
+	and front  = load_brc "Images\\Decor\\Front" in
+	let gifs   = [|gif1; gif2; gif3|]
+	and x_ball = ref (Random.int 740); (*370*)
+	and y_ball = ref 800
+	and mode   = ref 1
+	and id     = ref 0
+	and time1  = ref (Unix.gettimeofday ())
+	and time2  = ref (Unix.gettimeofday ())
+	and en_jeu = ref true in
 		(* boucle du jeu *)
 		while true do
-			draw_image back.data 0 0;
-			let frame = !id mod (gifs.(!mode)).frames 
-			and x     = if !mode = 2 then marcus_x - 15 else marcus_x
-			and y     = if !mode = 2 then marcus_y - 20 else marcus_y in
+			if (Unix.gettimeofday ()) -. !time1 > 0.01 then
+				begin
+				(* préparation affichage *)
+				draw_image back.data 0 0;
+				let frame = !id mod (gifs.(!mode)).frames 
+				and x     = if !mode = 2 then marcus_x - 15 else marcus_x
+				and y     = if !mode = 2 then marcus_y - 20 else marcus_y in
 				draw_image (gifs.(!mode)).imgs.(frame).data x y;
-			draw_image ball.data 370 800;
-			draw_image front.data 0 0;
-			let x_mouse, y_mouse = mouse_pos () in
+				draw_image ball.data (!x_ball) (!y_ball);
+				draw_image front.data 0 0;
+				let x_mouse, y_mouse = mouse_pos () in
+				set_color red;
 				fill_circle x_mouse y_mouse 5;
-			if (Unix.gettimeofday ()) -. !time1 > 0.10 then
-				begin
-				id    := (!id + 1) mod 20;
-				time1 := Unix.gettimeofday ();
-				end;
-			if (Unix.gettimeofday ()) -. !time2 > 5. then
-				begin
-				mode  := (!mode + 1) mod 3;
+				if !en_jeu = false then
+					begin
+					if !mode = 0 then
+						begin
+						set_color black;
+						fill_rect 349 490 102 50;
+						set_color white;
+						set_text_size 30;
+						moveto 354 500;
+						draw_string "Win !";
+						end
+					else
+						begin
+						set_color black;
+						fill_rect 330 490 136 50;
+						set_color white;
+						set_text_size 30;
+						moveto 337 500;
+						draw_string "Loose !";
+						end;
+					end;
+				(* actualisation varibales *)
+				if (Unix.gettimeofday ()) -. !time1 > 0.10 then
+					begin
+					id    := (!id + 1) mod 20; (* PPCM de tous les animations *)
+					time1 := Unix.gettimeofday ();
+					end;
+				if !en_jeu = true then
+					begin
+					if (!mode) <> 0 then
+						begin
+						x_ball := !x_ball - 2;
+						y_ball := !y_ball - 5;
+						end;
+					if out_screen (float_of_int(!x_ball)) (float_of_int(!y_ball)) then
+						begin
+						mode   := 2;
+						en_jeu := false;
+						end;
+					if touch_marcus (float_of_int(!x_ball)) (float_of_int(!y_ball)) then
+						begin
+						mode   := 0;
+						x_ball := -100;
+						y_ball := -100;
+						en_jeu := false;
+						end;
+					end;
+				if !en_jeu = false then
+					begin
+					if button_down () then
+						begin
+						mode   := 1;
+						en_jeu := true;
+						x_ball := Random.int 740;
+						y_ball := 800;
+						end;
+					end;
+				(* affichage *)
+				synchronize ();
+				clear_graph ();
 				time2 := Unix.gettimeofday ();
 				end;
-			synchronize ();
-			clear_graph ();
-			resize_window largeur hauteur;
 		done;;
