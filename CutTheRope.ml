@@ -19,25 +19,25 @@ let marcus_y     = 70;;
 (* Types *)
 
 type img  = {data   : image;
-			    height : int;
-				 width  : int};;
+             height : int;
+	     width  : int};;
 					
 type gif  = {imgs   : img array;
-				 frames : int};;
+             frames : int};;
 
 type vct  = {mutable x    : float;
-			    mutable y    : float;
-				 mutable oldx : float;
-				 mutable oldy : float};;
+             mutable y    : float;
+	     mutable oldx : float;
+	     mutable oldy : float};;
 
 type lien = {mutable debut  : vct;
-			    mutable fin    : vct;
-				 mutable taille : float};;
+             mutable fin    : vct;
+	     mutable taille : float};;
 					
 type 'a tableau_dynamique = {size   : unit -> int;
-									  id     : int  -> 'a;
-									  add    : 'a   -> unit;
-									  remove : int  -> unit};;
+                             id     : int  -> 'a;
+			     add    : 'a   -> unit;
+			     remove : int  -> unit};;
 
 (* init pour le tableau dynamique : default ne sera pas dans le tableau *)
 let make_tab default =
@@ -63,9 +63,9 @@ let make_tab default =
 		done;
 		taille := !taille -1;
 	in {size   = (fun () -> !taille);
-		 id     = (fun i -> if i < !taille then !support.(i) else failwith "Index out of range");
-		 add    =  ajoute;
-		 remove =  supprime};;
+	    id     = (fun i -> if i < !taille then !support.(i) else failwith "Index out of range");
+	    add    =  ajoute;
+	    remove =  supprime};;
 
 
 (* Fonctions outils *)
@@ -173,11 +173,13 @@ let load_brc relative_link =
 
 (* nécessite la fenêtre utilisée déjà ouverte *)
 let load_brc_set frames relative_link =
-	let empty_image = {data = make_image [|[|-1|]|]; height = 0; width = 0} in
+	let empty_image = {data = make_image [|[|-1|]|];
+	                   height = 0;
+			   width = 0} in
 	let gif_image   = {imgs   = Array.make frames empty_image;
-						    frames = frames} in
+	                   frames = frames} in
 	for i = 1 to frames do
-		let path      = relative_link ^ ("-" ^ (string_of_int i)) in
+		let path = relative_link ^ ("-" ^ (string_of_int i)) in
 		gif_image.imgs.(i-1) <- load_brc path;
 	done;
 	gif_image;;
@@ -193,13 +195,14 @@ let main =
 	display_mode false;
 	(* écran de chargement *)
 	chargement 0. " ";
-	let gif1   = load_brc_set 5 "Images\\Dragon\\Win"
-	and gif2   = load_brc_set 5 "Images\\Dragon\\Waiting"
-	and gif3   = load_brc_set 4 "Images\\Dragon\\Loose"
+	let char1  = load_brc_set 5 "Images\\Dragon\\Win"
+	and char2  = load_brc_set 5 "Images\\Dragon\\Waiting"
+	and char3  = load_brc_set 4 "Images\\Dragon\\Loose"
+	and slice  = load_brc_set 7 "Images\\Effects\\Slice"
 	and ball   = load_brc "Images\\Ball\\Test"
 	and back   = load_brc "Images\\Decor\\Back"
 	and front  = load_brc "Images\\Decor\\Front" in
-	let gifs   = [|gif1; gif2; gif3|]
+	let char   = [|char1; char2; char3|]
 	and x_ball = ref (Random.int 740); (*370*)
 	and y_ball = ref 800
 	and mode   = ref 1
@@ -213,15 +216,19 @@ let main =
 				begin
 				(* préparation affichage *)
 				draw_image back.data 0 0;
-				let frame = !id mod (gifs.(!mode)).frames 
+				let frame = !id mod (char.(!mode)).frames 
 				and x     = if !mode = 2 then marcus_x - 15 else marcus_x
 				and y     = if !mode = 2 then marcus_y - 20 else marcus_y in
-				draw_image (gifs.(!mode)).imgs.(frame).data x y;
+				draw_image (char.(!mode)).imgs.(frame).data x y;
+				if button_down () then
+						begin
+						let frame = !id mod slice.frames
+						and x_mouse, y_mouse = mouse_pos () in
+						draw_image slice.imgs.(frame).data (x_mouse - 50) (y_mouse - 50);
+						end;
+				
 				draw_image ball.data (!x_ball) (!y_ball);
 				draw_image front.data 0 0;
-				let x_mouse, y_mouse = mouse_pos () in
-				set_color red;
-				fill_circle x_mouse y_mouse 5;
 				if !en_jeu = false then
 					begin
 					if !mode = 0 then
@@ -230,7 +237,7 @@ let main =
 						fill_rect 349 490 102 50;
 						set_color white;
 						set_text_size 30;
-						moveto 354 500;
+						moveto 357 500;
 						draw_string "Win !";
 						end
 					else
@@ -246,7 +253,7 @@ let main =
 				(* actualisation varibales *)
 				if (Unix.gettimeofday ()) -. !time1 > 0.10 then
 					begin
-					id    := (!id + 1) mod 20; (* PPCM de tous les animations *)
+					id    := (!id + 1) mod 140; (* PPCM de tous les animations *)
 					time1 := Unix.gettimeofday ();
 					end;
 				if !en_jeu = true then
@@ -268,8 +275,8 @@ let main =
 						y_ball := -100;
 						en_jeu := false;
 						end;
-					end;
-				if !en_jeu = false then
+					end
+				else
 					begin
 					if button_down () then
 						begin
