@@ -83,6 +83,18 @@ let rope_touch rope x y =
 	done;
 	!id;;
 
+let out_screen x y =
+	let test = ref false in
+	if y > hauteur + 100 then
+		test := true;
+	if y < -100 then
+		test := true;
+	if x > largeur + 100 then
+		test := true;
+	if x < -100 then
+		test := true;
+	!test;;
+	
 
 (* Fonctions grphiques *)
 
