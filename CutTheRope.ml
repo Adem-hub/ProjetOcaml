@@ -33,7 +33,10 @@ type vct  = {mutable x    : float;
 type lien = {mutable debut  : vct;
              mutable fin    : vct;
              mutable taille : float};;
-					
+
+type corde = {pts    : point tableau_dynamique;
+              linked : bool};;
+	      
 type 'a tableau_dynamique = {size   : unit -> int;
                              id     : int  -> 'a;
                              add    : 'a   -> unit;
@@ -75,6 +78,19 @@ let make_tab default =
 (* Fonctions outils *)
 
 let distance vct1 vct2 = sqrt((vct1.x -. vct2.x)**2. +. (vct1.y -. vct2.y)**2.);;
+
+let cut corde indice =
+	let corde_1 = {pts    = make_tab (corde.pts.id 0);
+	               linked = false}
+	and corde_2 = {pts = make_tab (corde.pts.id 0);
+	               linked = false} in
+	for i = 0 to corde.pts.size () do
+		if indice < i then
+			corde_1.pts.add (corde.pts.id i)
+		if indice > i then
+			corde_2.pts.add (corde.pts.id i)
+	done;
+	(corde_1, corde_2);;
 
 (* renvoie l'id de bout touché et -1 si aucun n'est touché*)
 let rope_touch rope x y =
