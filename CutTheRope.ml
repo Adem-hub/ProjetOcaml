@@ -34,11 +34,11 @@ type lien = {mutable debut  : vct;
              mutable fin    : vct;
              mutable taille : float};;
 					
-type 'a tableau_dynamique = {size   : unit     -> int;
-                             id     : int      -> 'a;
-                             add    : 'a       -> unit;
-			                    remove : int      -> unit;
-                             switch : int -> int -> unit};;
+type 'a tableau_dynamique = {size   : unit -> int;
+                             id     : int  -> 'a;
+                             add    : 'a   -> unit;
+                             remove : int  -> unit;
+                             switch : int  -> int -> unit};;
 
 (* init pour le tableau dynamique : default ne sera pas dans le tableau *)
 let make_tab default =
