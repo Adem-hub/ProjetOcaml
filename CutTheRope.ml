@@ -20,24 +20,25 @@ let marcus_y     = 70;;
 
 type img  = {data   : image;
              height : int;
-	     width  : int};;
+             width  : int};;
 					
 type gif  = {imgs   : img array;
              frames : int};;
 
 type vct  = {mutable x    : float;
              mutable y    : float;
-	     mutable oldx : float;
-	     mutable oldy : float};;
+             mutable oldx : float;
+             mutable oldy : float};;
 
 type lien = {mutable debut  : vct;
              mutable fin    : vct;
-	     mutable taille : float};;
+             mutable taille : float};;
 					
-type 'a tableau_dynamique = {size   : unit -> int;
-                             id     : int  -> 'a;
-			     add    : 'a   -> unit;
-			     remove : int  -> unit};;
+type 'a tableau_dynamique = {size   : unit     -> int;
+                             id     : int      -> 'a;
+                             add    : 'a       -> unit;
+			                    remove : int      -> unit;
+                             switch : int -> int -> unit};;
 
 (* init pour le tableau dynamique : default ne sera pas dans le tableau *)
 let make_tab default =
@@ -62,10 +63,13 @@ let make_tab default =
 			(!support).(i) <- (!support).(i+1);
 		done;
 		taille := !taille -1;
+	and change indice valeur =
+		(!support).(indice) <- valeur;
 	in {size   = (fun () -> !taille);
 	    id     = (fun i -> if i < !taille then !support.(i) else failwith "Index out of range");
-	    add    =  ajoute;
-	    remove =  supprime};;
+	    add    = ajoute;
+	    remove = supprime;
+	    switch = change};;
 
 
 (* Fonctions outils *)
