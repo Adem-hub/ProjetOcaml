@@ -29,111 +29,152 @@ let image = make_image raw_image;;
 
 type point   = {mutable x: float;  mutable y: float; mutable oldx:float; mutable oldy:float};;
 type stick = {mutable debut: point;  mutable fin: point; mutable taille:float};;
-type 'a maliste = {mutable size:int; mutable tab:  'a array};;
+type 'a tableau_dynamique = {size   : unit      -> int;
+									  id     : int       -> 'a;
+									  add    : 'a        -> unit;
+									  remove : int       -> unit;
+									  switch : int -> 'a -> unit} ;;
+									  
 let dist (x1,y1) (x2,y2) = sqrt((x1-.x2)**2. +. (y1-.y2)**2.);;
 
-let update lien ta temps= 
-	for i=0 to ta do 
-		let dx= lien.(i).fin.x -. lien.(i).debut.x 
-		and dy= lien.(i).fin.y -. lien.(i).debut.y in
+
+
+
+
+
+
+
+let update lien boule temps= 
+	for  i = 0 to boule do 
+		let dx = (lien.id i).fin.x -. (lien.id i).debut.x 
+		and dy = (lien.id i).fin.y -. (lien.id i).debut.y in
 		let distance = sqrt( dx**2. +. dy**2.) in
-		let diff = lien.(i).taille -. distance in 
+		let diff = (lien.id i).taille -. distance in 
 		let pourcent = diff /. distance /.2. in
 		let decX = dx *. pourcent
 		and decY = dy *. pourcent in
-			if i!=0   then begin
-			lien.(i).debut.x <- (lien.(i).debut.x) -. decX;
-			lien.(i).debut.y <- (lien.(i).debut.y) -. decY end;
-			if i!=ta || Unix.gettimeofday()-.temps>=5.  then begin 
-			lien.(i).fin.x   <- (lien.(i).fin.x) +. decX;
-			lien.(i).fin.y   <- (lien.(i).fin.y) +. decY end;
+			if i!=0  then 
+				begin
+				(lien.id i).debut.x <- (lien.id i).debut.x -. decX;
+				(lien.id i).debut.y <- (lien.id i).debut.y -. decY
+				end;
+			if i!=boule || Unix.gettimeofday()-.temps>=5.  then
+				begin 
+				(lien.id i).fin.x   <- (lien.id i).fin.x +. decX;
+				(lien.id i).fin.y   <- (lien.id i).fin.y +. decY 
+				end;
 		done;;
+		
+		
+(* init pour le tableau dynamique : default ne sera pas dans le tableau *)
+let make_tab default =
+   let taille  = ref 0 
+   and support = ref [|default|] in
+	let ajoute valeur =
+		if !taille <> Array.length (!support) then
+			begin
+			(!support).(!taille) <- valeur;
+			end
+		else
+			begin
+			let new_support = Array.make ((!taille) * 2) valeur in
+			for i = 0 to ((!taille) - 1) do
+				new_support.(i) <- (!support).(i);
+			done;
+			support := new_support;
+			end;
+		taille := !taille + 1;
+	and supprime indice = 
+		for i = indice to ((!taille) - 2) do
+			(!support).(i) <- (!support).(i+1);
+		done;
+		taille := !taille -1;
+	and change id valeur = 
+		(!support).(id) <- valeur;
+	in {size     = (fun () -> !taille);
+		 id       = (fun i -> if i < !taille then !support.(i) else failwith "Index out of range");
+		 add      = ajoute;
+		 remove   = supprime;
+		 switch   = change};;
 
-let ajoute liste valeur = let prov= make (liste.size*2) valeur and taille=liste.size in
-								  if length (liste.tab) > liste.size then begin
-								  liste.tab.(taille)<-valeur;
-								  liste.size<-liste.size+1;
-								  end
-								  else begin 
-								  for i=0 to (liste.size)-1 do
-										prov.(i)<- liste.tab.(i);
-										done;
-									liste.size<-liste.size+1;
-									prov.(taille)<-valeur;
-									liste.tab<-prov;
-									end;;
+let make_pts_tab valeur = let tab_pts = make_tab valeur in
+								  let point = valeur in
+								  for i=0 to 10 do
+									tab_pts.add 	{x    =point.x-. float_of_int(20*i);
+														 y    =point.y;
+														 oldx =point.oldx-. float_of_int(20*i);
+														 oldy =point.oldy }
+								  done;tab_pts;;
 
-let makepttab = let provtab = {size=1;  tab= [|{x = 300.; y = 400.;oldx=300.;oldy=400.}|]} in
-							let point = provtab.tab.(0) in
-							for i=1 to 30 do
-								ajoute provtab {x=point.x-. float_of_int(10*i);
-													 y=point.y;
-													 oldx=point.oldx-. float_of_int(10*i);
-													 oldy=point.oldy }
-							done;provtab;;
+let make_liens_tab pttab len= let tab_liens = make_tab {debut  = {x = 300.; y = 400.; oldx = 300.; oldy = 400.};
+																	     fin    = {x = 290.; y = 400.; oldx = 290.; oldy = 400.};
+																        taille = 10.} in
+									   for i = 0 to len-2  do 
+											tab_liens.add {debut  = (!pttab).id i ;
+																fin    = (!pttab).id (i+1) ;
+																taille = dist ((!pttab.id (i)).x ,(!pttab.id (i)).y) ((!pttab.id (i+1)).x ,(!pttab.id (i+1)).y)};
+										done;tab_liens;;
 
-let makesttab pttab len= let p = {size=1;  tab= [|{debut = (!pttab).(0) ; fin= (!pttab).(1) ; taille= dist ((!pttab.(0)).x,(!pttab.(0)).y) ((!pttab.(1)).x,(!pttab.(1)).y)}|]} in
-									 for i=1 to len-1  do 
-										ajoute p {debut = (!pttab).(i) ;
-													 fin= (!pttab).(i+1) ;
-													 taille= dist ((!pttab.(i)).x,(!pttab.(i)).y) ((!pttab.(i+1)).x,(!pttab.(i+1)).y)};
-										done;p.tab;;
 
-let pt = ref makepttab.tab;;
-let st = makesttab pt 10;;
-pt;;
-st;;
 auto_synchronize false;;
 display_mode false;;
-let vx = ref 0.
-and vy = ref 0.
-and ti = Unix.gettimeofday()
-and cste_elastique =5
-and g= 9.81
-and dt = ref (Unix.gettimeofday())
-and pt = ref makepttab.tab and tot = makepttab.size in
-let st = makesttab pt tot in
+
+let vx     = ref 0.
+and vy     = ref 0.
+and t_init = Unix.gettimeofday()
+and cste   = 3
+and g      = 9.81
+and bool   = ref false
+and dt     = ref (Unix.gettimeofday())
+and points = ref (make_pts_tab {x = 300.; y = 400.; oldx = 300.; oldy = 400.}) in
+let total  = ref (!points.size()) in
+let liens  = make_liens_tab points (!total) in
 		while true do
-			if Unix.gettimeofday()-.(!dt)>1./.60. then begin
-				for i = 0 to tot-1  do
-					vx := (!pt.(i).x -. !pt.(i).oldx) ;
-					vy := (!pt.(i).y -. !pt.(i).oldy) ;
-					if (i != 0 && (i!=tot -1 || Unix.gettimeofday()-.ti>5. )) then begin
-						!pt.(i) <- {x = !pt.(i).x +. !vx;
-										y = !pt.(i).y +. !vy -. g*.0.01;
-										oldx = !pt.(i).x;
-										oldy = !pt.(i).y};
-						end;
-					if (i==tot-1) then begin
-						draw_image image (int_of_float (!pt.(i).x-.25.)) (int_of_float (!pt.(i).y-.25.));
-						if (Unix.gettimeofday()-.ti>=5.) then 
-							!pt.(i) <- {x = !pt.(i).x +. !vx;
-											y = !pt.(i).y +. !vy -. 0.2*.g;
-											oldx = !pt.(i).x;
-											oldy = !pt.(i).y};
-						end;
-						
-					if i!=tot-1 then begin
-						moveto (int_of_float st.(i).debut.x) (int_of_float st.(i).debut.y);
-						lineto (int_of_float st.(i).fin.x) (int_of_float st.(i).fin.y);
+			if Unix.gettimeofday()-.(!dt)>1./.60. then 
+				begin
+				for i = 0 to !total-1  do
+					vx := (!points.id i).x -. (!points.id i).oldx ;
+					vy := (!points.id i).y -. (!points.id i).oldy ;
+					if (i <> 0 && (i <> !total -1 || Unix.gettimeofday()-.t_init>5. )) then begin
+						(!points).switch i  ({x    = (!points.id i).x +. !vx;
+													 y    = (!points.id i).y +. !vy -. g*.0.01;
+													 oldx = (!points.id i).x;
+													 oldy = (!points.id i).y});
+				end;
+				if (i = !total-1) then 
+					begin
+						draw_image image (int_of_float (!points.id i).x - 25) (int_of_float (!points.id i).y - 25);
+						if (Unix.gettimeofday()-.t_init>=5.) then 
+							(!points).switch i  ({x    = (!points.id i).x +. !vx;
+														 y    = (!points.id i).y +. !vy -. g*.0.1;
+														 oldx = (!points.id i).x;
+														 oldy = (!points.id i).y});
 					end;
-					   
-					if (i != 0) && (i!= tot-1) then begin 
-								st.(i - 1).fin <- !pt.(i);
-								st.(i).debut <- !pt.(i) end;
-					if i = 0 then 
-						st.(0).debut <- !pt.(i)
-					else if  i= tot-1 then
-						st.(tot-2).fin <- !pt.(i);
-						
+				if i <> !total-1 then 
+					begin
+					moveto (int_of_float (liens.id i).debut.x) (int_of_float (liens.id i).debut.y);
+					lineto (int_of_float (liens.id i).fin.x) (int_of_float (liens.id i).fin.y);
+					end;
+				
+				if (i <> 0) && (i <> !total-1) then
+					begin 
+					(liens.id (i - 1)).fin <- (!points.id i);
+					(liens.id i).debut     <- (!points.id i)
+					end;
+				if i = 0 then
+					(liens.id 0).debut <- (!points.id i)
+				else if  i= !total-1 then
+					(liens.id (!total-2)).fin <- (!points.id i);
 				done;
 				
 				synchronize ();
 				clear_graph ();
-				for i=0 to cste_elastique do 
-					update st (tot-2) ti;
+				
+				for i=0 to cste do 
+					update liens (!total-2) t_init;
 				done;
 				dt:=Unix.gettimeofday();
-				
 			end;
+			
+			
 		done;;
