@@ -44,8 +44,9 @@ let dist (x1,y1) (x2,y2) = sqrt((x1-.x2)**2. +. (y1-.y2)**2.);;
 
 
 
-let update lien boule temps= 
+let update lien boule temps stop= 
 	for  i = 0 to boule do 
+		if i!=stop then begin
 		let dx = (lien.id i).fin.x -. (lien.id i).debut.x 
 		and dy = (lien.id i).fin.y -. (lien.id i).debut.y in
 		let distance = sqrt( dx**2. +. dy**2.) in
@@ -63,6 +64,7 @@ let update lien boule temps=
 				(lien.id i).fin.x   <- (lien.id i).fin.x +. decX;
 				(lien.id i).fin.y   <- (lien.id i).fin.y +. decY 
 				end;
+		end;
 		done;;
 		
 		
@@ -97,6 +99,18 @@ let make_tab default =
 		 remove   = supprime;
 		 switch   = change};;
 
+
+let rope_touch rope x y =
+	let id = ref (-1) in
+	for i = 0 to rope.size() - 1 do
+		let xi = (rope.id (i)).debut.x
+		and yi = (rope.id (i)).debut.y
+		and xf = (rope.id (i)).fin.x
+		and yf = (rope.id (i)).fin.y in
+		if (xi -. x) *. (xf -. x) <= 0. && (yi -. y) *. (yf -. y) <= 0. then
+			id := i;
+	done;
+	!id;;
 let make_pts_tab valeur = let tab_pts = make_tab valeur in
 								  let point = valeur in
 								  for i=0 to 10 do
@@ -124,8 +138,8 @@ and vy     = ref 0.
 and t_init = Unix.gettimeofday()
 and cste   = 3
 and g      = 9.81
-and bool   = ref false
 and dt     = ref (Unix.gettimeofday())
+and val_promise =ref (-1);
 and points = ref (make_pts_tab {x = 300.; y = 400.; oldx = 300.; oldy = 400.}) in
 let total  = ref (!points.size()) in
 let liens  = make_liens_tab points (!total) in
@@ -150,12 +164,13 @@ let liens  = make_liens_tab points (!total) in
 														 oldx = (!points.id i).x;
 														 oldy = (!points.id i).y});
 					end;
-				if i <> !total-1 then 
+				if i <> !total-1 && i <> !val_promise && i<> !val_promise-1 then 
 					begin
 					moveto (int_of_float (liens.id i).debut.x) (int_of_float (liens.id i).debut.y);
 					lineto (int_of_float (liens.id i).fin.x) (int_of_float (liens.id i).fin.y);
 					end;
-				
+				if (i <> !val_promise) then
+				begin
 				if (i <> 0) && (i <> !total-1) then
 					begin 
 					(liens.id (i - 1)).fin <- (!points.id i);
@@ -165,14 +180,19 @@ let liens  = make_liens_tab points (!total) in
 					(liens.id 0).debut <- (!points.id i)
 				else if  i= !total-1 then
 					(liens.id (!total-2)).fin <- (!points.id i);
+				end;
 				done;
-				
+				if (!val_promise = -1 && button_down()) then
+					begin
+					let x_mouse, y_mouse = mouse_pos () in 
+					val_promise := rope_touch liens (float_of_int x_mouse) (float_of_int y_mouse);
+					end;
+					
+				for i=0 to cste do 
+					update liens (!total-2) t_init (!val_promise);
+				done;
 				synchronize ();
 				clear_graph ();
-				
-				for i=0 to cste do 
-					update liens (!total-2) t_init;
-				done;
 				dt:=Unix.gettimeofday();
 			end;
 			
