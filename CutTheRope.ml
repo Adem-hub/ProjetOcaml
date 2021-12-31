@@ -13,6 +13,8 @@ let cst_rebond   = 3;;
 let g            = 9.81;;
 let hauteur      = 1000;;
 let largeur      = 800;;
+let marcus_x     = 160;;
+let marcus_y     = 70;;
 
 (* Types *)
 
@@ -74,27 +76,37 @@ let distance vct1 vct2 = sqrt((vct1.x -. vct2.x)**2. +. (vct1.y -. vct2.y)**2.);
 let rope_touch rope x y =
 	let id = ref (-1) in
 	for i = 0 to rope.size() - 1 do
-		let x1 = (rope.id (i)).debut.x
-		and y1 = (rope.id (i)).debut.y
-		and x2 = (rope.id (i)).fin.x
-		and y2 = (rope.id (i)).fin.y in
-		if (x1 -. x) *. (x2 -. x) <= 0. && (y1 -. y) *. (y2 -. y) <= 0. then
+		let xi = (rope.id (i)).debut.x
+		and yi = (rope.id (i)).debut.y
+		and xf = (rope.id (i)).fin.x
+		and yf = (rope.id (i)).fin.y in
+		if (xi -. x) *. (xf -. x) <= 0. && (yi -. y) *. (yf -. y) <= 0. then
 			id := i;
 	done;
 	!id;;
 
 let out_screen x y =
 	let test = ref false in
-	if y > hauteur + 100 then
+	if int_of_float y > hauteur + 100 then
 		test := true;
-	if y < -100 then
+	if int_of_float y < -100 then
 		test := true;
-	if x > largeur + 100 then
+	if int_of_float x > largeur + 100 then
 		test := true;
-	if x < -100 then
+	if int_of_float x < -100 then
 		test := true;
 	!test;;
-	
+
+let touch_marcus x y =
+	let xi = (float_of_int marcus_x) -. 75.
+	and yi = (float_of_int marcus_y) -. 75.
+	and xf = (float_of_int marcus_x) +. 75.
+	and yf = (float_of_int marcus_y) +. 75. in
+	if (xi -. x) *. (xf -. x) <= 0. && (yi -. y) *. (yf -. y) <= 0. then
+		true
+	else
+		false;;
+
 
 (* Fonctions grphiques *)
 
@@ -197,8 +209,8 @@ let main =
 		while true do
 			draw_image back.data 0 0;
 			let frame = !id mod (gifs.(!mode)).frames 
-			and x     = if !mode = 2 then 145 else 160
-			and y     = if !mode = 2 then 50 else 70 in
+			and x     = if !mode = 2 then marcus_x - 15 else marcus_x
+			and y     = if !mode = 2 then marcus_y - 20 else marcus_y in
 				draw_image (gifs.(!mode)).imgs.(frame).data x y;
 			draw_image ball.data 370 800;
 			draw_image front.data 0 0;
