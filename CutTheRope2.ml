@@ -27,26 +27,31 @@ let marcus_y    = 70;;
 
 (* Types *)
 
-type img   = {data   : image;
-			     height : int;
-				  width  : int};;
-					
-type gif   = {imgs   : img array;
-				  frames : int};;
+type img    = {data   : image;
+			      height : int;
+			      width  : int};;
 
-type point = {mutable x      : float;
-              mutable y      : float;
-              mutable oldx   : float;
-              mutable oldy   : float;
-              mutable pinned : bool};;
+type gif    = {imgs   : img array;
+				   frames : int};;
 
-type stick = {mutable debut    : point;
-              mutable fin      : point};;
+type point  = {mutable x      : float;
+               mutable y      : float;
+               mutable oldx   : float;
+               mutable oldy   : float;
+               mutable pinned : bool};;
 
-type corde = {x_c          : float;
-				  y_c          : float;
-				  len          : int;
-				  mutable used : bool};;
+type stick  = {mutable debut    : point;
+               mutable fin      : point};;
+
+type rope   = {x_c          : float;
+				   y_c          : float;
+				   len          : int;
+				   mutable used : bool};;
+
+type pick   = {xi : float;
+               yi : float;
+               xf : float;
+               yf : float};;
 
 type 'a tableau_dynamique = {size   : unit      -> int;
 									  id     : int       -> 'a;
@@ -80,6 +85,11 @@ let make_tab default =
 		 id       = (fun i -> if i < !taille then !support.(i) else failwith "Index out of range");
 		 add      = ajoute;
 		 remove   = supprime};;
+
+type niveau = {points : point tableau_dynamique;
+               liens  : stick tableau_dynamique;
+               ropes  : rope tableau_dynamique;
+               picks  : pick tableau_dynamique};;
 
 
 (* Fonctions outils *)
@@ -316,6 +326,44 @@ let load_brc_set frames relative_link =
 	gif_image;;
 
 
+let load_level id =
+	let file   = open_in (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int id) ^ ".niv") in
+	let lines  = Scanf.sscanf (input_line file) "lines: %d" (fun a -> a)
+	and points = make_tab {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false}
+	and liens  = make_tab {debut = {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false};
+								  fin   = {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false}}
+	and ropes  = make_tab {x_c = 0.; y_c = 0.; len = 0; used = false}
+	and picks  = make_tab {xi = 0.; yi = 0.; xf = 0.; yf = 0.} in
+		for i = 0 to lines - 1 do
+			let line = input_line file in
+			let check = Scanf.sscanf line "%s" (fun a -> a) in
+			if check = "b" then
+				begin
+				let x, y = Scanf.sscanf line "b %f %f" (fun a b -> (a, b)) in
+				points.add {x = x; y = y; oldx = x; oldy = y; pinned = false};
+				end;
+			if check = "c" then
+				begin
+				let x, y, l = Scanf.sscanf line "c %f %f %d" (fun a b c -> (a, b, c)) in
+				ropes.add {x_c = x; y_c = y; len = l; used = false};
+				end;
+			if check = "p" then
+				begin
+				let xi, yi, dir, l = Scanf.sscanf line "p %f %f %d %l" (fun a b c d -> (a, b, c, d)) in
+				let xf = if dir = 0
+				         then xi
+				         else xi +. lien_unit *. (float_of_int l)
+				and yf = if dir = 1
+				         then yi
+				         else yi +. lien_unit *. (float_of_int l) in
+				picks.add {xi = xi; yi = yi; xf = xf; yf = yf};
+				end;
+			chargement ((float_of_int i) /. (float_of_int (lines - 1))) ("Niveau-" ^ (string_of_int id) ^ ".brc");
+  		done;
+  		{points = points; liens  = liens; ropes  = ropes; picks  = picks};;
+
+
+
 (* Main *)
 
 let main =
@@ -338,28 +386,22 @@ let main =
 	and time   = ref (Unix.gettimeofday ())
 	and dt     = ref (Unix.gettimeofday ())
 	and delay  = ref (Unix.gettimeofday ())
-	and niveau = ref 1 in
+	and level  = ref 1 in
 		(* boucle du jeu *)
-		while !niveau < 2 do
-			let  points = make_tab {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false}
-			and liens  = make_tab {debut = {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false};
-								        fin   = {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false}}
-			and ropes  = make_tab {x_c = 0.; y_c = 0.; len = 0; used = false}
+		while !level < 2 do
+			let niveau = load_level !level
 			and mode   = ref 1
 			and id     = ref 0 
 			and en_jeu = ref true in
-			points.add {x = 300.; y = 800.; oldx = 300.; oldy = 800.; pinned = false};
-			ropes.add {x_c = 250.; y_c = 500.; len = 30; used = false};
-			ropes.add {x_c = 400.; y_c = 600.; len = 20; used = false};
 			while !en_jeu do
 				if (Unix.gettimeofday ()) -. !dt > 0.01 then
 					begin
 					dt := Unix.gettimeofday();
 					(* calcules *)
-					check_rope points liens ropes;
-					update_pts points;
+					check_rope niveau.points niveau.liens niveau.ropes;
+					update_pts niveau.points;
 					for i = 0 to bounce do 
-						update_liens liens;
+						update_liens niveau.liens;
 					done;
 					if (Unix.gettimeofday ()) -. !time > 0.10 then
 						begin
@@ -369,9 +411,9 @@ let main =
 					(* affichage *)
 					draw_image back.data 0 0;
 					affiche_marcus marcus id mode;
-					print_ropes ropes point;
-					print_liens liens;
-					print_ball ball (points.id 0).x (points.id 0).y;
+					print_ropes niveau.ropes point;
+					print_liens niveau.liens;
+					print_ball ball (niveau.points.id 0).x (niveau.points.id 0).y;
 					draw_image front.data 0 0;
 					if button_down () then
 							begin
@@ -383,23 +425,23 @@ let main =
 					clear_graph ();
 					end;
 					(* checks *)
-					if out_screen (points.id 0).x (points.id 0).y then
+					if out_screen (niveau.points.id 0).x (niveau.points.id 0).y then
 						begin
 						mode   := 2;
 						en_jeu := false;
 						end;
-					if touch_marcus (points.id 0).x (points.id 0).y then
+					if touch_marcus (niveau.points.id 0).x (niveau.points.id 0).y then
 						begin
 						mode   := 0;
 						en_jeu := false;
-						incr niveau;
+						incr level;
 						end;
 					if button_down() && Unix.gettimeofday () -. (!delay) > 0.25 then
 						begin
-						let indice = contact_lien liens in
+						let indice = contact_lien niveau.liens in
 						if indice <> -1 then
 							begin
-							liens.remove indice;
+							niveau.liens.remove indice;
 							delay := Unix.gettimeofday ();
 							end;
 						end;
