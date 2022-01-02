@@ -300,6 +300,7 @@ let load_brc relative_link =
 			done;
 			chargement ((float_of_int i) /. (float_of_int (width-1))) (relative_link ^ ".brc");
   		done;
+		close_in file;
   		{data = make_image pre_image; height = height; width = width};;
 
 (* nécessite la fenêtre utilisée déjà ouverte *)
@@ -315,40 +316,43 @@ let load_brc_set frames relative_link =
 
 
 let load_level id =
-	let file   = open_in (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int id) ^ ".niv") in
-	let lines  = Scanf.sscanf (input_line file) "lines: %d" (fun a -> a)
+	let file   = open_in (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int id) ^ ".niv")
 	and points = make_tab {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false}
 	and liens  = make_tab {debut = {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false};
 	                       fin   = {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false}}
 	and ropes  = make_tab {x_c = 0.; y_c = 0.; len = 0; used = false}
 	and picks  = make_tab {xi = 0.; yi = 0.; xf = 0.; yf = 0.} in
-		for i = 0 to lines - 1 do
-			let line = input_line file in
-			let check = Scanf.sscanf line "%s" (fun a -> a) in
-			if check = "b" then
-				begin
-				let x, y = Scanf.sscanf line "b %f %f" (fun a b -> (a, b)) in
-				points.add {x = x; y = y; oldx = x; oldy = y; pinned = false};
-				end;
-			if check = "c" then
-				begin
-				let x, y, l = Scanf.sscanf line "c %f %f %d" (fun a b c -> (a, b, c)) in
-				ropes.add {x_c = x; y_c = y; len = l; used = false};
-				end;
-			if check = "p" then
-				begin
-				let xi, yi, dir, l = Scanf.sscanf line "p %f %f %d %l" (fun a b c d -> (a, b, c, d)) in
-				let xf = if dir = 0
-				         then xi
-				         else xi +. lien_unit *. (float_of_int l)
-				and yf = if dir = 1
-				         then yi
-				         else yi +. lien_unit *. (float_of_int l) in
-				picks.add {xi = xi; yi = yi; xf = xf; yf = yf};
-				end;
-			chargement ((float_of_int i) /. (float_of_int (lines - 1))) ("Niveau-" ^ (string_of_int id) ^ ".brc");
-  		done;
-  		{points = points; liens  = liens; ropes  = ropes; picks  = picks};;
+		try
+			while true do
+				let line = input_line file in
+				let check = Scanf.sscanf line "%s" (fun a -> a) in
+				if check = "b" then
+					begin
+					let x, y = Scanf.sscanf line "b %f %f" (fun a b -> (a, b)) in
+					points.add {x = x; y = y; oldx = x; oldy = y; pinned = false};
+					end;
+				if check = "c" then
+					begin
+					let x, y, l = Scanf.sscanf line "c %f %f %d" (fun a b c -> (a, b, c)) in
+					ropes.add {x_c = x; y_c = y; len = l; used = false};
+					end;
+				if check = "p" then
+					begin
+					let xi, yi, dir, l = Scanf.sscanf line "p %f %f %d %l" (fun a b c d -> (a, b, c, d)) in
+					let xf = if dir = 0
+						 then xi
+						 else xi +. lien_unit *. (float_of_int l)
+					and yf = if dir = 1
+						 then yi
+						 else yi +. lien_unit *. (float_of_int l) in
+					picks.add {xi = xi; yi = yi; xf = xf; yf = yf};
+					end;
+				chargement ((float_of_int i) /. (float_of_int (lines - 1))) ("Niveau-" ^ (string_of_int id) ^ ".brc");
+			done;
+			{points = points; liens  = liens; ropes  = ropes; picks  = picks};
+		with End_of_file ->
+         		close_in file;
+          		{points = points; liens  = liens; ropes  = ropes; picks  = picks};;
 
 
 (* Jeu *)
