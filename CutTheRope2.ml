@@ -11,26 +11,26 @@ open Array;;
 (* lien du fichier à modifier *)
 let working_path = "C:\\Users\\admin\\Desktop\\WinCaml\\";;
 (* physique *)
-let g           = -9.81;;
-let friction    = 0.001;;
+let g            = -9.81;;
+let friction     = 0.001;;
 (* technique *)
-let bounce      = 5;;
-let lien_unit   = 10.;;
-let sensibility = 5.;;
+let bounce       = 5;;
+let lien_unit    = 10.;;
+let sensibility  = 5.;;
 (* graphique *)
-let color_lien1 = rgb 125 80 55;;
-let color_lien2 = rgb 220 150 90;;
-let hauteur     = 1000;;
-let largeur     = 800;;
+let color_lien1  = rgb 125 80 55;;
+let color_lien2  = rgb 220 150 90;;
+let hauteur      = 1000;;
+let largeur      = 800;;
 
 (* Types *)
 
 type img    = {data   : image;
-			      height : int;
-			      width  : int};;
+               height : int;
+               width  : int};;
 
 type gif    = {imgs   : img array;
-				   frames : int};;
+               frames : int};;
 
 type point  = {mutable x      : float;
                mutable y      : float;
@@ -42,9 +42,9 @@ type stick  = {mutable debut    : point;
                mutable fin      : point};;
 
 type rope   = {x_c          : float;
-				   y_c          : float;
-				   len          : int;
-				   mutable used : bool};;
+               y_c          : float;
+               len          : int;
+               mutable used : bool};;
 
 type pick   = {xi : float;
                yi : float;
@@ -52,9 +52,9 @@ type pick   = {xi : float;
                yf : float};;
 
 type 'a tableau_dynamique = {size   : unit      -> int;
-									  id     : int       -> 'a;
-									  add    : 'a        -> unit;
-									  remove : int       -> unit};;
+                             id     : int       -> 'a;
+                             add    : 'a        -> unit;
+                             remove : int       -> unit};;
 
 (* init pour le tableau dynamique : default ne sera pas dans le tableau *)
 let make_tab default =
@@ -189,18 +189,18 @@ let check_rope points liens ropes =
 				and indice = points.size () in
 				for j = 0 to (ropes.id i).len - 1 do 
 					points.add {x      = x_centre +. x_step *. float_of_int j;
-									y      = y_centre +. y_step *. float_of_int j;
-									oldx   = x_centre +. x_step *. float_of_int j;
-									oldy   = y_centre +. y_step *. float_of_int j;
-									pinned = false};
+					            y      = y_centre +. y_step *. float_of_int j;
+					            oldx   = x_centre +. x_step *. float_of_int j;
+					            oldy   = y_centre +. y_step *. float_of_int j;
+					            pinned = false};
 				done;
 				(points.id indice).pinned <- true;
 				for j = 0 to (ropes.id i).len - 2 do
 					liens.add {debut = points.id (indice + j);
-								  fin   = points.id (indice + j + 1)};
+					           fin   = points.id (indice + j + 1)};
 				done;
 				liens.add {debut = points.id (indice + (ropes.id i).len - 1);
-							  fin   = points.id 0};
+				           fin   = points.id 0};
 				(ropes.id i).used <- true;
 				end;
 			end;
@@ -306,7 +306,7 @@ let load_brc relative_link =
 let load_brc_set frames relative_link =
 	let empty_image = {data = make_image [|[|-1|]|]; height = 0; width = 0} in
 	let gif_image   = {imgs   = Array.make frames empty_image;
-						    frames = frames} in
+	                   frames = frames} in
 	for i = 1 to frames do
 		let path      = relative_link ^ ("-" ^ (string_of_int i)) in
 		gif_image.imgs.(i-1) <- load_brc path;
@@ -319,7 +319,7 @@ let load_level id =
 	let lines  = Scanf.sscanf (input_line file) "lines: %d" (fun a -> a)
 	and points = make_tab {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false}
 	and liens  = make_tab {debut = {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false};
-								  fin   = {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false}}
+	                       fin   = {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false}}
 	and ropes  = make_tab {x_c = 0.; y_c = 0.; len = 0; used = false}
 	and picks  = make_tab {xi = 0.; yi = 0.; xf = 0.; yf = 0.} in
 		for i = 0 to lines - 1 do
