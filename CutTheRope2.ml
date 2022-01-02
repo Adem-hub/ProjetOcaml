@@ -9,7 +9,7 @@ open Array;;
 (* Constantes *)
 
 (* lien du fichier à modifier *)
-let working_path = "C:\\Users\\admin\\Desktop\\WinCaml\\";;
+let working_path = "C:\\Users\\thoma\\OneDrive\\Bureau\\Informatique\\Projet_Caml\\DM - cut the rope\\";;
 (* physique *)
 let g            = -9.81;;
 let friction     = 0.001;;
@@ -17,6 +17,9 @@ let friction     = 0.001;;
 let bounce       = 5;;
 let lien_unit    = 10.;;
 let sensibility  = 5.;;
+let delta_t      = 0.01;;
+let delta2_t     = delta_t *. delta_t;;
+let scale        = 275.;;
 (* graphique *)
 let color_lien1  = rgb 125 80 55;;
 let color_lien2  = rgb 220 150 90;;
@@ -143,13 +146,13 @@ let update_pts points =
 	for i = 0 to points.size () - 1 do
 		if (points.id i).pinned = false then (* ajouter les paramètrages temporels *)
 			begin
-			let masse = if i = 0 then 10. else 0.1 in
-			let vx    = ((points.id i).x -. (points.id i).oldx) *. (1. -. friction *. masse)
-			and vy    = ((points.id i).y -. (points.id i).oldy) *. (1. -. friction *. masse)in
+			let coef = if i = 0 then 5. else 0.1 in
+			let vx    = ((points.id i).x -. (points.id i).oldx) *. (1. -. friction *. coef)
+			and vy    = ((points.id i).y -. (points.id i).oldy) *. (1. -. friction *. coef)in
 			(points.id i).oldx <- (points.id i).x;
 			(points.id i).oldy <- (points.id i).y;
 			(points.id i).x    <- (points.id i).x +. vx;
-			(points.id i).y    <- (points.id i).y +. vy +. g *. 0.01;
+			(points.id i).y    <- (points.id i).y +. vy +. g *. delta2_t *. scale;
 			end;
 	done;;
 
@@ -366,8 +369,9 @@ let partie niveau marcus ball slice point spikes back front =
 	and time         = ref (Unix.gettimeofday ())
 	and delay        = ref (Unix.gettimeofday ())in
 		while !en_jeu do
-			if (Unix.gettimeofday ()) -. !time > 0.01 then
+			if (Unix.gettimeofday ()) -. !time > delta_t then
 				begin
+				(* time update *)
 				time := Unix.gettimeofday ();
 				(* calcules *)
 				check_rope niveau.points niveau.liens niveau.ropes;
