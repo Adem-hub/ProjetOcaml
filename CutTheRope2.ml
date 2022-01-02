@@ -12,18 +12,16 @@ open Array;;
 let working_path = "C:\\Users\\admin\\Desktop\\WinCaml\\";;
 (* physique *)
 let g           = -9.81;;
-let friction    = 0.999;;
+let friction    = 0.001;;
 (* technique *)
-let bounce      = 3;;
+let bounce      = 5;;
 let lien_unit   = 10.;;
-let sensibility = 2.;;
+let sensibility = 5.;;
 (* graphique *)
 let color_lien1 = rgb 125 80 55;;
 let color_lien2 = rgb 220 150 90;;
 let hauteur     = 1000;;
 let largeur     = 800;;
-let marcus_x    = 160;;
-let marcus_y    = 70;;
 
 (* Types *)
 
@@ -133,11 +131,7 @@ let out_screen x y =
 	!test;;
 
 let touch_marcus x y =
-	let x1 = (float_of_int marcus_x) -. 110.
-	and y1 = (float_of_int marcus_y) -. 110.
-	and x2 = (float_of_int marcus_x) +. 110.
-	and y2 = (float_of_int marcus_y) +. 110. in
-	if (x1 -. x) *. (x2 -. x) <= 0. && (y1 -. y) *. (y2 -. y) <= 0. then
+	if (180. -. x) *. (290. -. x) <= 0. && (90. -. y) *. (200. -. y) <= 0. then
 		true
 	else
 		false;;
@@ -149,8 +143,9 @@ let update_pts points =
 	for i = 0 to points.size () - 1 do
 		if (points.id i).pinned = false then (* ajouter les paramètrages temporels *)
 			begin
-			let vx = ((points.id i).x -. (points.id i).oldx) *. friction
-			and vy = ((points.id i).y -. (points.id i).oldy) *. friction in
+			let masse = if i = 0 then 10. else 0.1 in
+			let vx    = ((points.id i).x -. (points.id i).oldx) *. (1. -. friction *. masse)
+			and vy    = ((points.id i).y -. (points.id i).oldy) *. (1. -. friction *. masse)in
 			(points.id i).oldx <- (points.id i).x;
 			(points.id i).oldy <- (points.id i).y;
 			(points.id i).x    <- (points.id i).x +. vx;
@@ -282,13 +277,6 @@ let print_ropes ropes point =
 			end;
 	done;;
 
-let affiche_marcus char id mode =
-	let frame = !id mod (char.(!mode)).frames
-	and x     = if !mode = 2 then marcus_x - 15 else marcus_x
-	and y     = if !mode = 2 then marcus_y - 20 else marcus_y in
-	draw_image (char.(!mode)).imgs.(frame).data x y;;
-
-
 
 (* Fonctions d'importation *)
 
@@ -363,6 +351,121 @@ let load_level id =
   		{points = points; liens  = liens; ropes  = ropes; picks  = picks};;
 
 
+(* Jeu *)
+
+let partie niveau marcus ball slice point spike back front = 
+	let is_win       = ref false
+	and en_jeu       = ref true
+	and marcus_frame = ref 0
+	and slice_frame  = ref 0
+	and frame_time   = ref (Unix.gettimeofday ())
+	and time         = ref (Unix.gettimeofday ())
+	and delay        = ref (Unix.gettimeofday ())in
+		while !en_jeu do
+			if (Unix.gettimeofday ()) -. !time > 0.01 then
+				begin
+				time := Unix.gettimeofday ();
+				(* calcules *)
+				check_rope niveau.points niveau.liens niveau.ropes;
+				update_pts niveau.points;
+				for i = 0 to bounce do 
+					update_liens niveau.liens;
+				done;
+				if (Unix.gettimeofday ()) -. !frame_time > 0.10 then
+					begin
+					marcus_frame := (!marcus_frame + 1) mod marcus.frames;
+					slice_frame  := (!slice_frame + 1) mod slice.frames;
+					frame_time   := Unix.gettimeofday ();
+					end;
+				(* affichage *)
+				draw_image back.data 0 0;				
+				draw_image marcus.imgs.(!marcus_frame).data 160 70;
+				print_ropes niveau.ropes point;
+				print_liens niveau.liens;
+				print_ball ball (niveau.points.id 0).x (niveau.points.id 0).y;
+				draw_image front.data 0 0;
+				if button_down () then
+						begin
+						let x_mouse, y_mouse = mouse_pos () in
+						draw_image slice.imgs.(!slice_frame).data (x_mouse - 50) (y_mouse - 60);
+						end;
+				synchronize ();
+				clear_graph ();
+				end;
+			(* checks *)
+			if button_down () && Unix.gettimeofday () -. (!delay) > 0.25 then
+				begin
+				let indice = contact_lien niveau.liens in
+				if indice <> -1 then
+					begin
+					niveau.liens.remove indice;
+					delay := Unix.gettimeofday ();
+					end;
+				end;
+			if out_screen (niveau.points.id 0).x (niveau.points.id 0).y then
+				begin
+				is_win := false;
+				en_jeu := false;
+				end;
+			if touch_marcus (niveau.points.id 0).x (niveau.points.id 0).y then
+				begin
+				is_win := true;
+				en_jeu := false;
+				end;
+		done;
+		!is_win;;
+
+let level_transition marcus result niveau =
+	let en_cours   = ref true
+	and frame      = ref 0
+	and frame_time = ref (Unix.gettimeofday ()) in
+	while !en_cours do
+		(* affichage *)
+		let couleur = rgb 25 85 110 in
+		set_color couleur;
+		fill_rect 0 0 largeur hauteur;
+		set_color white;
+		set_text_size 24;
+		if result = true then
+			begin
+			moveto 375 500;
+			draw_string "Win";
+			draw_image (marcus.(1)).imgs.(!frame mod (marcus.(1)).frames).data 325 350;
+			set_text_size 12;
+			if Sys.file_exists (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int niveau) ^ ".niv") then
+				begin
+				moveto 310 300;
+				draw_string "(Click to play next level)";
+				end
+			else
+				begin
+				moveto 150 300;
+				draw_string "(You finished the game: look at the reedme to see how to make a level)";
+				end;
+			end
+		else
+			begin
+			moveto 355 500;
+			draw_string "Loose";
+			draw_image (marcus.(2)).imgs.(!frame mod (marcus.(2)).frames).data 325 350;
+			set_text_size 12;
+			moveto 310 300;
+			draw_string "(Click to replay the level)";
+			end;
+		synchronize ();
+		clear_graph ();
+		(* updates *)
+		if (Unix.gettimeofday ()) -. !frame_time > 0.10 then
+			begin
+			frame      := (!frame + 1) mod 20;
+			frame_time := Unix.gettimeofday ();
+			end;
+		if button_down () then 
+			begin
+			en_cours := false;
+			end;
+	done;;
+
 
 (* Main *)
 
@@ -373,99 +476,24 @@ let main =
 	auto_synchronize false;
 	display_mode false;
 	(* écran de chargement *)
-	chargement 0. " ";
-	let char1  = load_brc_set 5 "Images\\Dragon\\Win"
-	and char2  = load_brc_set 5 "Images\\Dragon\\Waiting"
-	and char3  = load_brc_set 4 "Images\\Dragon\\Loose"
-	and slice  = load_brc_set 7 "Images\\Effects\\Slice"
+	let slice  = load_brc_set 7 "Images\\Effects\\Slice"
 	and ball   = load_brc "Images\\Ball\\Ball"
 	and point  = load_brc "Images\\Point\\Point"
+	and spike  = load_brc "Images\\Spike\\Spike"
 	and back   = load_brc "Images\\Decor\\Back"
-	and front  = load_brc "Images\\Decor\\Front" in
+	and front  = load_brc "Images\\Decor\\Front" 
+	and char1  = load_brc_set 5 "Images\\Dragon\\Waiting"
+	and char2  = load_brc_set 5 "Images\\Dragon\\Win"
+	and char3  = load_brc_set 4 "Images\\Dragon\\Loose" in
 	let marcus = [|char1; char2; char3|]
-	and time   = ref (Unix.gettimeofday ())
-	and dt     = ref (Unix.gettimeofday ())
-	and delay  = ref (Unix.gettimeofday ())
 	and level  = ref 1 in
 		(* boucle du jeu *)
-		while !level < 2 do
-			let niveau = load_level !level
-			and mode   = ref 1
-			and id     = ref 0 
-			and en_jeu = ref true in
-			while !en_jeu do
-				if (Unix.gettimeofday ()) -. !dt > 0.01 then
-					begin
-					dt := Unix.gettimeofday();
-					(* calcules *)
-					check_rope niveau.points niveau.liens niveau.ropes;
-					update_pts niveau.points;
-					for i = 0 to bounce do 
-						update_liens niveau.liens;
-					done;
-					if (Unix.gettimeofday ()) -. !time > 0.10 then
-						begin
-						id   := (!id + 1) mod 140; (* PPCM de tous les animations *)
-						time := Unix.gettimeofday ();
-						end;
-					(* affichage *)
-					draw_image back.data 0 0;
-					affiche_marcus marcus id mode;
-					print_ropes niveau.ropes point;
-					print_liens niveau.liens;
-					print_ball ball (niveau.points.id 0).x (niveau.points.id 0).y;
-					draw_image front.data 0 0;
-					if button_down () then
-							begin
-							let frame = !id mod slice.frames
-							and x_mouse, y_mouse = mouse_pos () in
-							draw_image slice.imgs.(frame).data (x_mouse - 50) (y_mouse - 50);
-							end;
-					synchronize ();
-					clear_graph ();
-					end;
-					(* checks *)
-					if out_screen (niveau.points.id 0).x (niveau.points.id 0).y then
-						begin
-						mode   := 2;
-						en_jeu := false;
-						end;
-					if touch_marcus (niveau.points.id 0).x (niveau.points.id 0).y then
-						begin
-						mode   := 0;
-						en_jeu := false;
-						incr level;
-						end;
-					if button_down() && Unix.gettimeofday () -. (!delay) > 0.25 then
-						begin
-						let indice = contact_lien niveau.liens in
-						if indice <> -1 then
-							begin
-							niveau.liens.remove indice;
-							delay := Unix.gettimeofday ();
-							end;
-						end;
-			done;
-			if !mode = 0 then
+		while Sys.file_exists (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int !level) ^ ".niv") do
+			let niveau = load_level !level in
+			let result = partie niveau marcus.(0) ball slice point spike back front in
+			if result = true then
 				begin
-				set_text_size 30;
-				set_color black;
-				moveto 357 505;
-				draw_string "Win !";
-				set_color green;
-				moveto 355 500;
-				draw_string "Win !";
-				end
-			else
-				begin
-				set_text_size 30;
-				set_color black;
-				moveto 337 505;
-				draw_string "Loose !";
-				set_color red;
-				moveto 335 500;
-				draw_string "Loose !";
+				incr level;
 				end;
-			synchronize ();
-			clear_graph ();
+			level_transition marcus result !level;
 		done;;
