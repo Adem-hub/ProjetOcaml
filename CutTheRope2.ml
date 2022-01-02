@@ -353,7 +353,7 @@ let load_level id =
 
 (* Jeu *)
 
-let partie niveau marcus ball slice point spike back front = 
+let partie niveau marcus ball slice point spikes back front = 
 	let is_win       = ref false
 	and en_jeu       = ref true
 	and marcus_frame = ref 0
@@ -476,17 +476,19 @@ let main =
 	auto_synchronize false;
 	display_mode false;
 	(* écran de chargement *)
-	let slice  = load_brc_set 7 "Images\\Effects\\Slice"
-	and ball   = load_brc "Images\\Ball\\Ball"
-	and point  = load_brc "Images\\Point\\Point"
-	and spike  = load_brc "Images\\Spike\\Spike"
-	and back   = load_brc "Images\\Decor\\Back"
-	and front  = load_brc "Images\\Decor\\Front" 
-	and char1  = load_brc_set 5 "Images\\Dragon\\Waiting"
-	and char2  = load_brc_set 5 "Images\\Dragon\\Win"
-	and char3  = load_brc_set 4 "Images\\Dragon\\Loose" in
-	let marcus = [|char1; char2; char3|]
-	and level  = ref 1 in
+	let slice   = load_brc_set 7 "Images\\Effects\\Slice"
+	and ball    = load_brc "Images\\Ball\\Ball"
+	and point   = load_brc "Images\\Point\\Point"
+	and spike_h = load_brc "Images\\Spike\\Spike_h"
+	and spike_v = load_brc "Images\\Spike\\Spike_v"
+	and back    = load_brc "Images\\Decor\\Back"
+	and front   = load_brc "Images\\Decor\\Front" 
+	and char1   = load_brc_set 5 "Images\\Dragon\\Waiting"
+	and char2   = load_brc_set 5 "Images\\Dragon\\Win"
+	and char3   = load_brc_set 4 "Images\\Dragon\\Loose" in
+	let marcus  = [|char1; char2; char3|]
+	and spikes  = [|spike_h; spike_v|]
+	and level   = ref 1 in
 		(* boucle du jeu *)
 		while Sys.file_exists (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int !level) ^ ".niv") do
 			let niveau = load_level !level in
