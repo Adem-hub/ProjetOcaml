@@ -1,0 +1,9 @@
+To create a level you need to:
+1) In the game folder go to '\Niveau'
+2) Create a '.txt' file named "Niveau-X" where X is the integer following the highest existing one
+3) Then you can create the items you want in the level:
+3.1) The ball:
+- At least one is needed for the game to work, and only the first line containing a ball will be used
+- To make a ball you need to write this line:
+  'b x y', where x and y are integrers; x is between 0 (left) and 800 (right), y is between 0 (bottom) and 1000 (top)
+3.2) The ropes:
