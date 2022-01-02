@@ -1,9 +1,35 @@
 To create a level you need to:
-1) In the game folder go to '\Niveau'
+
+1) In the game folder go to '\Niveau
+
 2) Create a '.txt' file named "Niveau-X" where X is the integer following the highest existing one
+
 3) Then you can create the items you want in the level:
+
 3.1) The ball:
 - At least one is needed for the game to work, and only the first line containing a ball will be used
 - To make a ball you need to write this line:
-  'b x y', where x and y are integrers; x is between 0 (left) and 800 (right), y is between 0 (bottom) and 1000 (top)
+  'b x y', where (x,y) is the initial position of the ball;
+   x should be between 0 (left) and 800 (right),
+   y should be between 0 (bottom) and 1000 (top)
+
 3.2) The ropes:
+- No minimal amount
+- No maximum; however we recommend to limit yourself to (5 max)
+- To make a rope you need to write this line:
+  'c x y l', where (x,y) is the center point, and l the length of the rope in multiples of 10 pixels
+   x should be between 0 (left) and 800 (right),
+   y should be between 0 (bottom) and 1000 (top),
+   l should be at least 1 (we recommend not to go over 40, more does not fit the screen)
+
+3.3) The spikes:
+- No minimal amount
+- No maximum; however we recommend to limit yourself to (5 max)
+- To make a rope you need to write this line:
+  'p x y dir l', where (x,y) is the center point, dir the direction (horizontal or vertical) and l the length of the spikes in multiples of 10 pixels
+   x should be between 0 (left) and 800 (right),
+   y should be between 0 (bottom) and 1000 (top),
+   dir is 0 (horizontal) or 1 (vertical)
+   l should be at least 1 (we recommend not to go over 80, more does not fit the screen)
+
+4) When you finished creating your level change the extension of the file to '.niv'
