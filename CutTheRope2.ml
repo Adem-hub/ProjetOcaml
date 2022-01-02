@@ -492,7 +492,7 @@ let main =
 		(* boucle du jeu *)
 		while Sys.file_exists (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int !level) ^ ".niv") do
 			let niveau = load_level !level in
-			let result = partie niveau marcus.(0) ball slice point spike back front in
+			let result = partie niveau marcus.(0) ball slice point spikes back front in
 			if result = true then
 				begin
 				incr level;
