@@ -347,7 +347,7 @@ let load_level id =
 						 else yi +. lien_unit *. (float_of_int l) in
 					picks.add {xi = xi; yi = yi; xf = xf; yf = yf};
 					end;
-				chargement ((float_of_int i) /. (float_of_int (lines - 1))) ("Niveau-" ^ (string_of_int id) ^ ".brc");
+				chargement 1. ("Niveau-" ^ (string_of_int id) ^ ".brc");
 			done;
 			{points = points; liens  = liens; ropes  = ropes; picks  = picks};
 		with End_of_file ->
