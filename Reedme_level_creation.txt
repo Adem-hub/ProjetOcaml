@@ -17,7 +17,7 @@ To create a level you need to:
 - No minimal amount
 - No maximum; however we recommend to limit yourself to (5 max)
 - To make a rope you need to write this line:
-  'c x y l', where (x,y) is the center point, and l the length of the rope in multiples of 10 pixels
+  'c x y l', where (x,y) is the center point, and l the length of the rope divided by 20
    x should be between 0 (left) and 800 (right),
    y should be between 0 (bottom) and 1000 (top),
    l should be at least 1 (we recommend not to go over 40, more does not fit the screen)
@@ -26,7 +26,7 @@ To create a level you need to:
 - No minimal amount
 - No maximum; however we recommend to limit yourself to (5 max)
 - To make a rope you need to write this line:
-  'p x y dir l', where (x,y) is the center point, dir the direction (horizontal or vertical) and l the length of the spikes in multiples of 10 pixels
+  'p x y dir l', where (x,y) is the center point, dir the direction (horizontal or vertical) and l the length of the spikes in divided by 10
    x should be between 0 (left) and 800 (right),
    y should be between 0 (bottom) and 1000 (top),
    dir is 0 (horizontal) or 1 (vertical)

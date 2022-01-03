@@ -14,12 +14,12 @@ let working_path = "C:\\Users\\thoma\\OneDrive\\Bureau\\Informatique\\Projet_Cam
 let g            = -9.81;;
 let friction     = 0.001;;
 (* technique *)
-let bounce       = 5;;
-let lien_unit    = 10.;;
+let bounce       = 10;;
+let lien_unit    = 5.;;
 let sensibility  = 5.;;
 let delta_t      = 0.01;;
 let delta2_t     = delta_t *. delta_t;;
-let scale        = 275.;;
+let scale        = 200.;;
 (* graphique *)
 let color_lien1  = rgb 125 80 55;;
 let color_lien2  = rgb 220 150 90;;
@@ -81,7 +81,7 @@ let make_tab default =
 		for i = indice to ((!taille) - 2) do
 			(!support).(i) <- (!support).(i+1);
 		done;
-		taille := !taille -1;
+		taille := !taille - 1;
 	in {size     = (fun () -> !taille);
 		 id       = (fun i -> if i < !taille then !support.(i) else failwith "Index out of range");
 		 add      = ajoute;
@@ -146,7 +146,7 @@ let update_pts points =
 	for i = 0 to points.size () - 1 do
 		if (points.id i).pinned = false then (* ajouter les paramètrages temporels *)
 			begin
-			let coef = if i = 0 then 5. else 0.1 in
+			let coef = if i = 0 then 10. else 0.1 in
 			let vx    = ((points.id i).x -. (points.id i).oldx) *. (1. -. friction *. coef)
 			and vy    = ((points.id i).y -. (points.id i).oldy) *. (1. -. friction *. coef)in
 			(points.id i).oldx <- (points.id i).x;
@@ -344,7 +344,7 @@ let load_level id =
 					let xi, yi, dir, l = Scanf.sscanf line "p %f %f %d %l" (fun a b c d -> (a, b, c, d)) in
 					let xf = if dir = 0
 						 then xi
-						 else xi +. lien_unit *. (float_of_int l)
+						 else xi +. 10. *. (float_of_int l)
 					and yf = if dir = 1
 						 then yi
 						 else yi +. lien_unit *. (float_of_int l) in
@@ -393,10 +393,10 @@ let partie niveau marcus ball slice point spikes back front =
 				print_ball ball (niveau.points.id 0).x (niveau.points.id 0).y;
 				draw_image front.data 0 0;
 				if button_down () then
-						begin
-						let x_mouse, y_mouse = mouse_pos () in
-						draw_image slice.imgs.(!slice_frame).data (x_mouse - 50) (y_mouse - 60);
-						end;
+					begin
+					let x_mouse, y_mouse = mouse_pos () in
+					draw_image slice.imgs.(!slice_frame).data (x_mouse - 50) (y_mouse - 60);
+					end;
 				synchronize ();
 				clear_graph ();
 				end;
