@@ -9,7 +9,7 @@ open Array;;
 (* Constantes *)
 
 (* lien du fichier à modifier *)
-let working_path = "C:\\Users\\thoma\\OneDrive\\Bureau\\Informatique\\Projet_Caml\\DM - cut the rope\\";;
+let working_path = "C:\\Users\\abenr\\OneDrive\\Bureau\ProjetOcaml-main (6)\ProjetOcaml-main\\";;
 (* physique *)
 let g            = -9.81;;
 let friction     = 0.001;;
