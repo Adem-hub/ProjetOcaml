@@ -53,8 +53,8 @@ let display_menu true =
 
 let display_buttons =
 	set_color blue;
-	fill_rect 210 30 30 20;
-	fill_rect 510 30 30 20;;
+	fill_rect 190 30 60 30;
+	fill_rect 530 30 60 30;;
 	
 let set_levels =
 	let level  = ref 0
@@ -62,7 +62,7 @@ let set_levels =
 	and y      = ref 800 
 	and tab    = ref (make_tab (0,0)) in
 	let levels = make_tab (!tab) in
-		while !level < 1000 (*ici la condition quand on parcourt les fichiers *) do
+		while !level < 66 (*ici la condition quand on parcourt les fichiers *) do
 			(!tab).add (!x, !y);
 			x := !x+ 90;
 			if !x >= 720 then begin
@@ -92,8 +92,10 @@ let display_levels levels page =
 			moveto (x+10) (y+10);
 			draw_string (string_of_int(i + page*56));
 			set_color red;
-			
-		done;;
+		done;
+		set_color blue;
+		fill_rect 190 30 74 30;
+		fill_rect 530 30 74 30;;
 
 let detect_level levels page pressed= 
 	let tab = (levels.id page) in
