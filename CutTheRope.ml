@@ -1,9 +1,9 @@
 (* Import *)
 
 #load "graphics.cma";;
-#load "unix.cma";;
 open Graphics;;
 open Array;;
+open Sys;;
 
 
 (* Constantes *)
@@ -365,25 +365,25 @@ let partie niveau marcus ball slice point spikes back front =
 	and en_jeu       = ref true
 	and marcus_frame = ref 0
 	and slice_frame  = ref 0
-	and frame_time   = ref (Unix.gettimeofday ())
-	and time         = ref (Unix.gettimeofday ())
-	and delay        = ref (Unix.gettimeofday ())in
+	and frame_time   = ref (Sys.time ())
+	and main_time    = ref (Sys.time ())
+	and delay        = ref (Sys.time ())in
 		while !en_jeu do
-			if (Unix.gettimeofday ()) -. !time > delta_t then
+			if (Sys.time ()) -. !main_time > delta_t then
 				begin
 				(* time update *)
-				time := Unix.gettimeofday ();
+				main_time := Sys.time ();
 				(* calcules *)
 				check_rope niveau.points niveau.liens niveau.ropes;
 				update_pts niveau.points;
 				for i = 0 to bounce do 
 					update_liens niveau.liens;
 				done;
-				if (Unix.gettimeofday ()) -. !frame_time > 0.10 then
+				if (Sys.time ()) -. !frame_time > 0.10 then
 					begin
 					marcus_frame := (!marcus_frame + 1) mod marcus.frames;
 					slice_frame  := (!slice_frame + 1) mod slice.frames;
-					frame_time   := Unix.gettimeofday ();
+					frame_time   := Sys.time ();
 					end;
 				(* affichage *)
 				draw_image back.data 0 0;				
@@ -401,13 +401,13 @@ let partie niveau marcus ball slice point spikes back front =
 				clear_graph ();
 				end;
 			(* checks *)
-			if button_down () && Unix.gettimeofday () -. (!delay) > 0.25 then
+			if button_down () && Sys.time () -. (!delay) > 0.25 then
 				begin
 				let indice = contact_lien niveau.liens in
 				if indice <> -1 then
 					begin
 					niveau.liens.remove indice;
-					delay := Unix.gettimeofday ();
+					delay := Sys.time ();
 					end;
 				end;
 			if out_screen (niveau.points.id 0).x (niveau.points.id 0).y then
@@ -426,7 +426,7 @@ let partie niveau marcus ball slice point spikes back front =
 let level_transition marcus result niveau =
 	let en_cours   = ref true
 	and frame      = ref 0
-	and frame_time = ref (Unix.gettimeofday ()) in
+	and frame_time = ref (Sys.time ()) in
 	while !en_cours do
 		(* affichage *)
 		let couleur = rgb 25 85 110 in
@@ -463,10 +463,10 @@ let level_transition marcus result niveau =
 		synchronize ();
 		clear_graph ();
 		(* updates *)
-		if (Unix.gettimeofday ()) -. !frame_time > 0.10 then
+		if (Sys.time ()) -. !frame_time > 0.10 then
 			begin
 			frame      := (!frame + 1) mod 20;
-			frame_time := Unix.gettimeofday ();
+			frame_time := Sys.time ();
 			end;
 		if button_down () then 
 			begin
