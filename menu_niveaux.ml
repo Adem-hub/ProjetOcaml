@@ -115,7 +115,7 @@ let change_page page bool max=
 	let px, py = mouse_pos() 
 	and coords = [|210;510|]  in 
 		for i = 0 to 1 do 
-			if (px >= coords.(i) && px <= coords.(i) + 30 && py >= 30 && py <= 50) then
+			if (px >= coords.(i) && px <= coords.(i) + 80 && py >= 30 && py <= 60) then
 					begin
 					if button_down () && not (!bool) then 
 					   begin
@@ -150,8 +150,3 @@ let niveaux =
 			display_buttons;
 			synchronize ();
 	done;;
-
-
-
-
-
