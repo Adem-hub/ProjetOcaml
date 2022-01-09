@@ -113,9 +113,9 @@ let detect_level levels page pressed=
 
 let change_page page bool max= 
 	let px, py = mouse_pos() 
-	and coords = [|210;510|]  in 
+	and coords = [|190;530|]  in 
 		for i = 0 to 1 do 
-			if (px >= coords.(i) && px <= coords.(i) + 80 && py >= 30 && py <= 60) then
+			if (px >= coords.(i) && px <= coords.(i) + 74 && py >= 30 && py <= 60) then
 					begin
 					if button_down () && not (!bool) then 
 					   begin
