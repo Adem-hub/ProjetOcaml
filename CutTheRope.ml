@@ -9,7 +9,7 @@ open Sys;;
 (* Constantes *)
 
 (* lien du fichier à modifier *)
-let working_path = "C:\\Users\\abenr\\OneDrive\\Bureau\ProjetOcaml-main (6)\ProjetOcaml-main\\";;
+let working_path = "C:\\Users\\abenr\\OneDrive\\Bureau\\ProjetOcaml-main\\ProjetOcaml-main\\";;
 (* physique *)
 let g            = -9.81;;
 let friction     = 0.001;;
@@ -59,7 +59,8 @@ type 'a tableau_dynamique = {size   : unit      -> int;
                              add    : 'a        -> unit;
                              remove : int       -> unit};;
 
-(* init pour le tableau dynamique : default ne sera pas dans le tableau *)
+(* initialisation pour le tableau dynamique : créer un tableau de taille nulle typé grâce à default
+note: default ne sera pas dans le tableau *)
 let make_tab default =
    let taille  = ref 0 
    and support = ref [|default|] in
@@ -97,7 +98,8 @@ type niveau = {points : point tableau_dynamique;
 
 let distance x1 y1 x2 y2 = sqrt ((x1 -. x2)**2. +. (y1 -. y2)**2.);;
 
-(* renvoie l'id de bout touché et -1 si aucun n'est touché*)
+(* la fonction renvoie l'id du lien "touché" et -1 si aucun lien n'est "touché"
+nte: "touché" correspond à la souris dans le carré décrit par les coordonnées des extémités du liens à une sensibilité près*)
 let contact_lien liens =
 	let x_mouse, y_mouse = mouse_pos () in 
 	let x = float_of_int x_mouse
@@ -121,6 +123,8 @@ let contact_lien liens =
 	done;
 	!id;;
 
+(* Vérifie si le hamburger est sortie de l'écran
+note: la sortie de l'écran est considéré plus loin pour que la balle sorte réellement de l'écran *)
 let out_screen x y =
 	let test = ref false in
 	if int_of_float y > hauteur + 100 then
@@ -133,6 +137,8 @@ let out_screen x y =
 		test := true;
 	!test;;
 
+(* Vérifie si le hamburger est sur Marcus (le dinosaure)
+note: on vérifie si le hamburger est dans un carré centré sur marcus sur lui qui fait ça taille et le diamètre de la balle de coté *)
 let touch_marcus x y =
 	if (180. -. x) *. (290. -. x) <= 0. && (90. -. y) *. (200. -. y) <= 0. then
 		true
@@ -142,11 +148,12 @@ let touch_marcus x y =
 
 (* Fonction d'update *)
 
+(* Fonction qui calcules les coordonnées des points à t + delta_t *)
 let update_pts points =
 	for i = 0 to points.size () - 1 do
-		if (points.id i).pinned = false then (* ajouter les paramètrages temporels *)
+		if (points.id i).pinned = false then
 			begin
-			let coef = if i = 0 then 10. else 0.1 in
+			let coef = if i = 0 then 10. else 0.1 in (* Le coefficicent de frottement diffère si on parle de la balle *)
 			let vx    = ((points.id i).x -. (points.id i).oldx) *. (1. -. friction *. coef)
 			and vy    = ((points.id i).y -. (points.id i).oldy) *. (1. -. friction *. coef)in
 			(points.id i).oldx <- (points.id i).x;
@@ -156,6 +163,7 @@ let update_pts points =
 			end;
 	done;;
 
+(* Fonction qui actualise les liens afin qu'il garde la bonne distance: lien_unit *)
 let update_liens liens= 
 	for  i = 0 to liens.size () - 1 do
 		let dx         = (liens.id i).fin.x -. (liens.id i).debut.x 
@@ -177,6 +185,7 @@ let update_liens liens=
 				end;
 		done;;
 
+(* Fonction vérifiant si une corde non utilisée doit-être activée, si oui la corde sera alors créée *)
 let check_rope points liens ropes =
 	for i = 0 to ropes.size () - 1 do
 		if (ropes.id i).used = false then
@@ -212,6 +221,7 @@ let check_rope points liens ropes =
 
 (* Fonctions d'affichage *)
 
+(* Fonction qui affiche l'écran de chargement *)
 let chargement pourcentage fichier = 
 	let couleur = rgb 25 85 110 in
 	set_color couleur;
@@ -248,6 +258,9 @@ let chargement pourcentage fichier =
 	fill_rect 0 0 charge 20;
 	synchronize ();;
 
+(* Fonction qui affiche les liens des cordes
+note: en utilisant un modulo pour la couleur lors de retrait de 1 liens les couleurs peuvent alterner,
+cependant cet effet est peu pérceptible et ne gène pas au déroulement de la partie, aussi il est ignoré *)
 let print_liens liens =
 	set_color color_lien1;
 	set_line_width 3;
@@ -261,11 +274,13 @@ let print_liens liens =
 	done;
 	set_line_width 1;;
 
+(* Fonction qui affiche le hamburger *)
 let print_ball ball x y =
 	let x_reel = int_of_float (x -. 30.)
 	and y_reel = int_of_float (y -. 30.) in
 	draw_image ball.data x_reel y_reel;;
 
+(* Fonction qui affiche les points d'attache des cordes ainsi que les cercles de détection *)
 let print_ropes ropes point =
 	for i = 0 to ropes.size () - 1 do
 		let x     = int_of_float ((ropes.id i).x_c)
@@ -283,7 +298,8 @@ let print_ropes ropes point =
 
 (* Fonctions d'importation *)
 
-(* nécessite la fenêtre utilisée déjà ouverte *)
+(* Fonction qui permet d'importer un image au format .brc (cf. documentation du projet) et en fait un type image
+note: nécessite la fenêtre utilisée déjà ouverte pour la fonction make_image de Graphics *)
 let load_brc relative_link =
 	let file  = open_in (working_path ^ relative_link ^ ".brc") in
 	let width, height = Scanf.sscanf (input_line file) "%dx%d" (fun a b -> (a, b)) in
@@ -306,7 +322,8 @@ let load_brc relative_link =
 		close_in file;
   		{data = make_image pre_image; height = height; width = width};;
 
-(* nécessite la fenêtre utilisée déjà ouverte *)
+(* Fonction qui permet d'importer un gif sous forme de plusiseurs .brc (cf. documentation du projet) et en fait un type gif
+note: nécessite la fenêtre utilisée déjà ouverte pour la fonction load_brc *)
 let load_brc_set frames relative_link =
 	let empty_image = {data = make_image [|[|-1|]|]; height = 0; width = 0} in
 	let gif_image   = {imgs   = Array.make frames empty_image;
@@ -317,7 +334,7 @@ let load_brc_set frames relative_link =
 	done;
 	gif_image;;
 
-
+(* Fonction qui import un niveau de format .niv (cf. documentation du projet / Readme creation level) *)
 let load_level id =
 	let file   = open_in (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int id) ^ ".niv")
 	and points = make_tab {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false}
@@ -360,6 +377,7 @@ let load_level id =
 
 (* Jeu *)
 
+(* Fonction principale gère le fonctionnement pendant une partie *)
 let partie niveau marcus ball slice point spikes back front = 
 	let is_win       = ref false
 	and en_jeu       = ref true
@@ -423,6 +441,7 @@ let partie niveau marcus ball slice point spikes back front =
 		done;
 		!is_win;;
 
+(* Fonction de gestion de la page de transition *)
 let level_transition marcus result niveau =
 	let en_cours   = ref true
 	and frame      = ref 0
@@ -477,13 +496,14 @@ let level_transition marcus result niveau =
 
 (* Main *)
 
+(* Fonction de lancement *)
 let main =
 	(* ouverture de la fenêtre *)
 	let dimension = (string_of_int largeur) ^ "x" ^ (string_of_int hauteur) in
 	open_graph dimension;
 	auto_synchronize false;
 	display_mode false;
-	(* écran de chargement *)
+	(* chargement *)
 	let slice   = load_brc_set 7 "Images\\Effects\\Slice"
 	and ball    = load_brc "Images\\Ball\\Ball"
 	and point   = load_brc "Images\\Point\\Point"
