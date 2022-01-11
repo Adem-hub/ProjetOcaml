@@ -9,7 +9,7 @@ open Sys;;
 (* Constantes *)
 
 (* lien du fichier à modifier *)
-let working_path = "C:\\Users\\abenr\\OneDrive\\Bureau\ProjetOcaml-main (8)\ProjetOcaml-main\\";;
+let working_path = "C:\\Users\\thoma\\OneDrive\\Bureau\\ProjetOcaml-main\\";;
 (* physique *)
 let g            = -9.81;;
 let friction     = 0.001;;
@@ -431,10 +431,7 @@ let level_transition marcus result niveau =
 	and frame_time = ref (Sys.time ()) in
 	while !en_cours do
 		(* affichage *)
-		let couleur = rgb 25 85 110 in
-		set_color couleur;
-		fill_rect 0 0 largeur hauteur;
-		set_color white;
+		draw_image bg.data 0 0
 		set_text_size 24;
 		if result = true then
 			begin
@@ -614,26 +611,23 @@ let main =
 	let marcus  = [|char1; char2; char3|]
 	and spikes  = [|spike_h; spike_v|]
 	(* Constante de jeu *)
-	and level     = ref 1 in
+	and level     = ref 1 
+	and menu      = ref false in
 		(* boucle du jeu *)
 		while true do
-			display_menu bgLevel;
-			let px, py = mouse_pos () in
-			if (px >= 260 && px <= 535 && py >= 500 && py <= 600) && button_down() then 
+			let niveau   = load_level !level
+			and en_cours = ref true in
+				while !en_cours do
+					let result = partie niveau marcus.(0) ball slice point spikes back front in
+					if result = true then
+						begin
+						incr level;
+						en_cours := false;
+						end;
+					menu := level_transition marcus bgLevel result !level;
+				done;
+			if !menu then
 				begin
-				let niveau   = load_level !level
-				and en_cours = ref true in
-					while !en_cours do
-						let result = partie niveau marcus.(0) ball slice point spikes back front in
-						if result = true then
-							begin
-							incr level;
-							en_cours := false;
-							end;
-						level_transition marcus result !level;
-					done;
-						
+				level := niveaux bgLevel frameLevel r_arrow l_arrow;
 				end;
-			if (px >= 260 && px <= 535 && py >= 300 && py <= 400) && button_down() then
-				level := niveaux bgLevel frameLevel r_arrow l_arrow ;
 		done;;
