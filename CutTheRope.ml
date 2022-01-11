@@ -9,17 +9,23 @@ open Sys;;
 (* Constantes *)
 
 (* lien du fichier à modifier *)
-let working_path = "C:\\Users\\abenr\\OneDrive\\Bureau\\ProjetOcaml-main\\ProjetOcaml-main\\";;
-(* physique *)
-let g            = -9.81;;
-let friction     = 0.001;;
+let working_path = "C:\\Users\\thoma\\OneDrive\\Bureau\\ProjetOcaml-main\\";;
+
 (* technique *)
-let bounce       = 10;;
+let bounce       = 40;;
 let lien_unit    = 5.;;
-let sensibility  = 5.;;
+let sensibility  = 10.;;
 let delta_t      = 0.01;;
 let delta2_t     = delta_t *. delta_t;;
-let scale        = 200.;;
+let scale        = 350.;;
+(* physique *)
+let pi           = acos (-1.);;
+let g            = -9.81;;
+let visco_air    = 1.85 *. 0.00001;;
+let masse_ball   = 0.250;;
+let masse_lien   = 0.02;;
+let k_ball       = (1. /. masse_ball) *. 6. *. (30. /. scale) *. pi *. visco_air;;
+let k_corde      = (1. /. masse_lien) *. 6. *. (1.5 /. scale) *. pi *. visco_air;;
 (* graphique *)
 let color_lien1  = rgb 125 80 55;;
 let color_lien2  = rgb 220 150 90;;
@@ -153,13 +159,13 @@ let update_pts points =
 	for i = 0 to points.size () - 1 do
 		if (points.id i).pinned = false then
 			begin
-			let coef = if i = 0 then 10. else 0.1 in (* Le coefficicent de frottement diffère si on parle de la balle *)
-			let vx    = ((points.id i).x -. (points.id i).oldx) *. (1. -. friction *. coef)
-			and vy    = ((points.id i).y -. (points.id i).oldy) *. (1. -. friction *. coef)in
+			let coef = if i = 0 then k_ball else k_corde in (* Le coefficicent de frottement diffère si on parle de la balle *)
+			let vx    = ((points.id i).x -. (points.id i).oldx)
+			and vy    = ((points.id i).y -. (points.id i).oldy) in
 			(points.id i).oldx <- (points.id i).x;
 			(points.id i).oldy <- (points.id i).y;
-			(points.id i).x    <- (points.id i).x +. vx;
-			(points.id i).y    <- (points.id i).y +. vy +. g *. delta2_t *. scale;
+			(points.id i).x    <- (points.id i).x +. vx *. (1. -. coef *. delta2_t);
+			(points.id i).y    <- (points.id i).y +. vy *. (1. -. coef *. delta2_t) +. g *. delta2_t *. scale;
 			end;
 	done;;
 
