@@ -9,7 +9,7 @@ open Sys;;
 (* Constantes *)
 
 (* lien du fichier à modifier *)
-let working_path = "C:\\Users\\thoma\\OneDrive\\Bureau\\ProjetOcaml-main\\";;
+let working_path = "C:\\Users\\abenr\\OneDrive\\Bureau\\ProjetOcaml-main (8)\\ProjetOcaml-main\\";;
 (* physique *)
 let g            = -9.81;;
 let friction     = 0.001;;
@@ -363,6 +363,7 @@ let load_level id =
 (* Jeu *)
 
 let partie niveau marcus ball slice point spikes back front = 
+	set_font "Liberation-18:antialias=false";
 	let is_win       = ref false
 	and en_jeu       = ref true
 	and marcus_frame = ref 0
@@ -425,39 +426,56 @@ let partie niveau marcus ball slice point spikes back front =
 		done;
 		!is_win;;
 
-let level_transition marcus result niveau =
+let level_transition marcus bg result niveau =
 	let en_cours   = ref true
 	and frame      = ref 0
-	and frame_time = ref (Sys.time ()) in
+	and frame_time = ref (Sys.time ())
+	and menu       = ref false in
 	while !en_cours do
+		let mouse_x, mouse_y = mouse_pos() in
 		(* affichage *)
-		draw_image bg.data 0 0
+		draw_image bg.data 0 0;
+		set_color white;
+		fill_rect 50 200 275 100;
+		fill_rect 475 200 275 100;
+		set_color black;
+		if (mouse_x >= 50 && mouse_x <= 325 && mouse_y >= 200 && mouse_y <= 300) then
+			begin
+			draw_rect 50 200 275 100;
+			end;
+		if (mouse_x >= 475 && mouse_x <= 750 && mouse_y >= 200 && mouse_y <= 300) then
+			begin
+			draw_rect 475 200 275 100;
+			end;
 		set_text_size 24;
 		if result = true then
 			begin
 			moveto 375 500;
 			draw_string "Win";
 			draw_image (marcus.(1)).imgs.(!frame mod (marcus.(1)).frames).data 325 350;
-			set_text_size 12;
+			
 			if Sys.file_exists (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int niveau) ^ ".niv") then
 				begin
-				moveto 310 300;
-				draw_string "(Click to play next level)";
+				moveto 115 240;
+				draw_string "Continuer";
 				end
 			else
-				begin
-				moveto 150 300;
-				draw_string "(You finished the game: look at the reedme to see how to make a level)";
+				begin 
+				moveto 145 240;
+				draw_string "Quitter";
 				end;
+			moveto 575 240;
+			draw_string "Menu";
 			end
 		else
 			begin
 			moveto 355 500;
 			draw_string "Loose";
 			draw_image (marcus.(2)).imgs.(!frame mod (marcus.(2)).frames).data 325 350;
-			set_text_size 12;
-			moveto 310 300;
-			draw_string "(Click to replay the level)";
+			moveto 125 240;
+			draw_string "Rejouer";
+			moveto 575 240;
+			draw_string "Menu";
 			end;
 		synchronize ();
 		clear_graph ();
@@ -467,11 +485,18 @@ let level_transition marcus result niveau =
 			frame      := (!frame + 1) mod 20;
 			frame_time := Sys.time ();
 			end;
-		if button_down () then 
+		if (mouse_x >= 50 && mouse_x <= 325 && mouse_y >= 200 && mouse_y <= 300) && button_down () then 
 			begin
 			en_cours := false;
+			menu := false;
 			end;
-	done;;
+		if (mouse_x >= 475 && mouse_x <= 750 && mouse_y >= 200 && mouse_y <= 300) && button_down () then
+			begin
+			en_cours := false;
+			menu := true;
+			end;
+	done;
+	!menu;;
 
 (* Gestion Niveaux *)
 
@@ -576,12 +601,7 @@ let niveaux bg frame r_arrow l_arrow =
 		done;
 		!level;;
 
-let display_menu bg = 
-	set_color blue;
-	draw_image bg.data 0 0 ;
-	fill_rect 260 300 275 100;
-	fill_rect 260 500 275 100;
-	synchronize ();;
+
 
 
 
@@ -615,19 +635,19 @@ let main =
 	and menu      = ref false in
 		(* boucle du jeu *)
 		while true do
-			let niveau   = load_level !level
-			and en_cours = ref true in
-				while !en_cours do
-					let result = partie niveau marcus.(0) ball slice point spikes back front in
-					if result = true then
-						begin
-						incr level;
-						en_cours := false;
-						end;
+			let niveau   = load_level !level in
+				let result = partie niveau marcus.(0) ball slice point spikes back front in
+				if result = true then
+					begin
+					incr level;
+					end;
 					menu := level_transition marcus bgLevel result !level;
-				done;
 			if !menu then
 				begin
 				level := niveaux bgLevel frameLevel r_arrow l_arrow;
+				end
+			else if not (Sys.file_exists (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int !level) ^ ".niv")) then
+				begin
+				close_graph();
 				end;
 		done;;
