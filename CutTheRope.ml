@@ -10,7 +10,6 @@ open Sys;;
 
 (* lien du fichier à modifier *)
 let working_path = "C:\\Users\\thoma\\OneDrive\\Bureau\\ProjetOcaml-main\\";;
-
 (* technique *)
 let bounce       = 40;;
 let lien_unit    = 5.;;
@@ -31,6 +30,15 @@ let color_lien1  = rgb 125 80 55;;
 let color_lien2  = rgb 220 150 90;;
 let hauteur      = 1000;;
 let largeur      = 800;;
+
+
+(* Variables globales *)
+
+(* mini-jeu *)
+let x_dino   = ref 100;;
+let x_burger = ref 500;;
+let dir      = ref 1;;
+
 
 (* Types *)
 
@@ -227,6 +235,68 @@ let check_rope points liens ropes =
 
 (* Fonctions d'affichage *)
 
+(* fonction qui dessine le dinosaure du mini-jeu *)
+let draw_dino x y dir =
+	set_color (rgb 16 117 95);
+	fill_circle (x - dir * 40) (y + 20) 5;
+	fill_circle (x - dir * 40) (y + 30) 5;
+	fill_circle (x - dir * 40) (y + 40) 5;
+	fill_circle (x - dir * 40) (y + 50) 5;
+	fill_circle (x - dir * 40) (y + 60) 5;
+	fill_circle (x - dir * 40) (y + 70) 5;
+	fill_circle (x - dir * 40) (y + 80) 5;
+	fill_circle (x - dir * 40) (y + 90) 5;
+	fill_circle (x - dir * 30) (y + 100) 10;
+	fill_circle (x - dir * 20) (y + 110) 10;
+	fill_circle (x - dir * 10) (y + 110) 15;
+	fill_circle x (y + 110) 20;
+	set_color (rgb 91 199 176);
+	fill_poly [|((x - dir * 40), y);
+					((x - dir * 60), y);
+					((x - dir * 40), (y + 20))|];
+	fill_rect (x -40) y 80 80;
+	fill_rect (x - 25) (y - 20) 10 20;
+	fill_rect (x + 15) (y - 20) 10 20;
+	fill_circle x (y + 80) 40;
+	set_color black;
+	fill_circle (x + dir * 20) (y + 80) 5;
+	if dir = 1 then
+		fill_rect (x + 10) (y + 60) 30 2
+	else
+		fill_rect (x - 40) (y + 60) 30 2;;
+
+(* fonction qui dessine le hamburger du mini-jeu *)
+let draw_burger x y =
+	set_color (rgb 173 128 55);
+	fill_ellipse x (y + 5) 30 15;
+	fill_ellipse x (y - 5) 30 15;
+	set_color (rgb 84 53 3);
+	fill_rect (x - 30) (y - 5) 60 10;
+	fill_circle (x - 30) y 5;
+	fill_circle (x + 30) y 5;;
+
+(* fonction qui gère le mini jeu
+note: elle ne fait pas d'affichage mais est nécessaire à chargement d'où sa présence ici *)
+let mini_jeu () =
+	if key_pressed () then
+		begin
+		let key = read_key () in
+		if key = 'a' && !x_dino > 50 then
+			begin
+			x_dino := !x_dino - 10;
+			dir    := -1;
+			end;
+		if key = 'e' && !x_dino < 750 then
+			begin
+			x_dino := !x_dino + 10;
+			dir    := 1;
+			end;
+		end;
+	if abs(!x_dino - !x_burger) < 70 then
+		x_burger := (Random.int 600) + 100;
+	draw_dino !x_dino 150 !dir;
+	draw_burger !x_burger 150;;
+
 (* Fonction qui affiche l'écran de chargement *)
 let chargement pourcentage fichier = 
 	let couleur = rgb 25 85 110 in
@@ -260,8 +330,11 @@ let chargement pourcentage fichier =
 	draw_string "You open and see this desperate dinosaur. You grab your magic wand, which";
 	moveto 110 350;
 	draw_string "can cut any rope at any distance, and help him get a pleasant dinner.";
+	moveto 275 300;
+	draw_string "a to go left | e to go right";
 	let charge = int_of_float (float_of_int largeur *. pourcentage) in
 	fill_rect 0 0 charge 20;
+	mini_jeu ();
 	synchronize ();;
 
 (* Fonction qui affiche les liens des cordes
