@@ -16,12 +16,12 @@ let lien_unit    = 5.;;
 let sensibility  = 10.;;
 let delta_t      = 0.01;;
 let delta2_t     = delta_t *. delta_t;;
-let scale        = 350.;;
+let scale        = 280.;;
 (* physique *)
 let pi           = acos (-1.);;
 let g            = -9.81;;
 let visco_air    = 1.85 *. 0.00001;;
-let masse_ball   = 0.250;;
+let masse_ball   = 0.200;;
 let masse_lien   = 0.02;;
 let k_ball       = (1. /. masse_ball) *. 6. *. (30. /. scale) *. pi *. visco_air;;
 let k_corde      = (1. /. masse_lien) *. 6. *. (1.5 /. scale) *. pi *. visco_air;;
@@ -114,7 +114,7 @@ type niveau = {points : point tableau_dynamique;
 let distance x1 y1 x2 y2 = sqrt ((x1 -. x2)**2. +. (y1 -. y2)**2.);;
 
 (* la fonction renvoie l'id du lien "touché" et -1 si aucun lien n'est "touché"
-nte: "touché" correspond à la souris dans le carré décrit par les coordonnées des extémités du liens à une sensibilité près*)
+note: "touché" correspond à la souris dans le carré décrit par les coordonnées des extémités du liens à une sensibilité près*)
 let contact_lien liens =
 	let x_mouse, y_mouse = mouse_pos () in 
 	let x = float_of_int x_mouse
@@ -507,7 +507,7 @@ let load_level id =
 
 (* Gestion Niveaux *)
 
-let set_levels =
+let set_levels () =
 	let level  = ref 0
 	and x      = ref 45
 	and y      = ref 650 
@@ -592,7 +592,7 @@ let change_page page bool max=
 		done;;
 
 let niveaux bg frame r_arrow l_arrow = 
-	let levels_tab    = set_levels 
+	let levels_tab    = set_levels ()
 	and page          = ref 0 
 	and level         = ref (-1) 
 	and time          = ref (Sys.time())
@@ -776,9 +776,10 @@ let main =
 	and spikes  = [|spike_h; spike_v|]
 	(* Constante de jeu *)
 	and level     = ref 0 
-	and menu      = ref false in
+	and menu      = ref false
+	and in_game   = ref true in
 		(* boucle du jeu *)
-		while true do
+		while !in_game do
 			let niveau   = load_level !level in
 				let result = partie niveau marcus.(0) ball slice point spikes back front in
 				if result = true then
@@ -792,6 +793,7 @@ let main =
 				end
 			else if not (Sys.file_exists (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int !level) ^ ".niv")) then
 				begin
+				in_game := false;
 				close_graph();
 				end;
 		done;;
