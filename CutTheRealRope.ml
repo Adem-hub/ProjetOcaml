@@ -9,7 +9,7 @@ open Sys;;
 (* Constantes *)
 
 (* lien du fichier à modifier *)
-let working_path = "C:\\Users\\abenr\\OneDrive\\Bureau\\ProjetOcaml-main (8)\\ProjetOcaml-main\\";;
+let working_path = "C:\\Users\\thoma\\OneDrive\\Bureau\\ProjetOcaml-main\\";;
 (* technique *)
 let bounce       = 40;;
 let lien_unit    = 5.;;
@@ -64,10 +64,10 @@ type rope   = {x_c          : float;
                len          : int;
                mutable used : bool};;
 
-type pick   = {xi : float;
-               yi : float;
-               xf : float;
-               yf : float};;
+type pick   = {xi : int;
+               yi : int;
+               xf : int;
+               yf : int};;
 
 type 'a tableau_dynamique = {size   : unit      -> int;
                              id     : int       -> 'a;
@@ -233,22 +233,26 @@ let check_rope points liens ropes =
 			end;
 	done;;
 
-let pics_collision pics x y = 
+let picks_collision picks x y = 
     let touche = ref false
     and i = ref 0 in
-    while !i < pics.size() && !touche = false do 
-			let xi = float_of_int (pics.id !i).xi
-			and xf = float_of_int (pics.id !i).xf
-			and yi = float_of_int (pics.id !i).yi
-			and yf = float_of_int (pics.id !i).yf in 
-			if (xi -. x) *. (xf -. x) <= 0. && (yi -. y) *. (yf -. y) <= 0. then 
+    while !i < picks.size() && !touche = false do 
+			let xi = float_of_int (picks.id !i).xi
+			and xf = float_of_int (picks.id !i).xf
+			and yi = float_of_int (picks.id !i).yi
+			and yf = float_of_int (picks.id !i).yf in 
+			if xi = xf && abs_float(x -. xi) < 35. && (y -. yi) *. (y -. yf) <= 0. then 
 				begin 
 				touche := true;
-				print_string "hello";
-				print_newline();
+				end;
+			if yi = yf && abs_float(y -. yi) < 35. && (x -. xi) *. (x -. xf) <= 0. then 
+				begin 
+				touche := true;
 				end;
 			incr i;
-      done;!touche;;
+      done;
+      !touche;;
+
 
 (* Fonctions d'affichage *)
 
@@ -317,7 +321,7 @@ let mini_jeu () =
 	draw_dino !x_dino 150 !dir;
 	draw_burger !x_burger 150;;
 
-(* Fonction qui affiche l'écran de chargement *)
+(* fonction qui affiche l'écran de chargement *)
 let chargement pourcentage fichier = 
 	let couleur = rgb 25 85 110 in
 	set_color couleur;
@@ -362,7 +366,7 @@ let chargement pourcentage fichier =
 	mini_jeu ();
 	synchronize ();;
 
-(* Fonction qui affiche les liens des cordes
+(* fonction qui affiche les liens des cordes
 note: en utilisant un modulo pour la couleur lors de retrait de 1 liens les couleurs peuvent alterner,
 cependant cet effet est peu pérceptible et ne gène pas au déroulement de la partie, aussi il est ignoré *)
 let print_liens liens =
@@ -378,13 +382,13 @@ let print_liens liens =
 	done;
 	set_line_width 1;;
 
-(* Fonction qui affiche le hamburger *)
+(* fonction qui affiche le hamburger *)
 let print_ball ball x y =
 	let x_reel = int_of_float (x -. 30.)
 	and y_reel = int_of_float (y -. 30.) in
 	draw_image ball.data x_reel y_reel;;
 
-(* Fonction qui affiche les points d'attache des cordes ainsi que les cercles de détection *)
+(* fonction qui affiche les points d'attache des cordes ainsi que les cercles de détection *)
 let print_ropes ropes point =
 	for i = 0 to ropes.size () - 1 do
 		let x     = int_of_float ((ropes.id i).x_c)
@@ -399,27 +403,27 @@ let print_ropes ropes point =
 			end;
 	done;;
 
-let draw_pics pics im1 im2 = 
-	for i = 0 to (pics.size() - 1) do
-		if (pics.id i).xi = (pics.id i).xf then
+let draw_picks picks imgs = 
+	for i = 0 to (picks.size() - 1) do
+		if (picks.id i).xi = (picks.id i).xf then
 			begin
-			let dist = abs ( (pics.id i).yi - (pics.id i).yf )
+			let dist = abs ( (picks.id i).yi - (picks.id i).yf )
 			and j = ref 0
-			and x = (pics.id i).xi
-			and y = (pics.id i).yi in
-				for i = 0 to dist/20 - 1 do
-					draw_image im1.data x (y + !j*20);
+			and x = (picks.id i).xi
+			and y = (picks.id i).yi in
+				for i = 0 to dist/10 - 1 do
+					draw_image imgs.(1).data x (y + !j*10);
 					incr j;
 				done;
 			end
 		else
 			begin
-			let dist = abs ( (pics.id i).xi - (pics.id i).xf )
+			let dist = abs ( (picks.id i).xi - (picks.id i).xf )
 			and j = ref 0
-			and x = (pics.id i).xi
-			and y = (pics.id i).yi in
-				for i = 0 to dist/20 - 1 do
-					draw_image im2.data (x + !j*20) y;
+			and x = (picks.id i).xi
+			and y = (picks.id i).yi in
+				for i = 0 to dist/10 - 1 do
+					draw_image imgs.(0).data (x + !j*10) y;
 					incr j;
 				done;
 			end;
@@ -470,7 +474,7 @@ let load_level id =
 	and liens  = make_tab {debut = {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false};
 	                       fin   = {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false}}
 	and ropes  = make_tab {x_c = 0.; y_c = 0.; len = 0; used = false}
-	and picks  = make_tab {xi = 0.; yi = 0.; xf = 0.; yf = 0.} in
+	and picks  = make_tab {xi = 0; yi = 0; xf = 0; yf = 0} in
 		try
 			while true do
 				let line = input_line file in
@@ -487,13 +491,13 @@ let load_level id =
 					end;
 				if check = "p" then
 					begin
-					let xi, yi, dir, l = Scanf.sscanf line "p %f %f %d %l" (fun a b c d -> (a, b, c, d)) in
+					let xi, yi, dir, l = Scanf.sscanf line "p %d %d %d %d" (fun a b c d -> (a, b, c, d)) in
 					let xf = if dir = 0
 						 then xi
-						 else xi +. 10. *. (float_of_int l)
+						 else xi + 10 * l
 					and yf = if dir = 1
 						 then yi
-						 else yi +. lien_unit *. (float_of_int l) in
+						 else yi + 10 * l in
 					picks.add {xi = xi; yi = yi; xf = xf; yf = yf};
 					end;
 			done;
@@ -529,9 +533,6 @@ let set_levels () =
 			done;
 			levels.add (!tab);
 			levels;;
-
-
-
 
 let display_levels levels page bg l_arrow r_arrow frame =
 	draw_image bg.data 0 0;
@@ -607,7 +608,6 @@ let niveaux bg frame r_arrow l_arrow =
 			synchronize ();
 		done;
 		!level;;
-		
 
 (* Fonction principale gère le fonctionnement pendant une partie *)
 let partie niveau marcus ball slice point spikes back front = 
@@ -640,6 +640,7 @@ let partie niveau marcus ball slice point spikes back front =
 				draw_image back.data 0 0;				
 				draw_image marcus.imgs.(!marcus_frame).data 160 70;
 				print_ropes niveau.ropes point;
+				draw_picks niveau.picks spikes;
 				print_liens niveau.liens;
 				print_ball ball (niveau.points.id 0).x (niveau.points.id 0).y;
 				draw_image front.data 0 0;
@@ -662,6 +663,11 @@ let partie niveau marcus ball slice point spikes back front =
 					end;
 				end;
 			if out_screen (niveau.points.id 0).x (niveau.points.id 0).y then
+				begin
+				is_win := false;
+				en_jeu := false;
+				end;
+			if picks_collision niveau.picks (niveau.points.id 0).x (niveau.points.id 0).y then
 				begin
 				is_win := false;
 				en_jeu := false;
