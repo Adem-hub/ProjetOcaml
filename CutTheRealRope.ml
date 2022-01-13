@@ -248,7 +248,7 @@ let pics_collision pics x y =
 				print_newline();
 				end;
 			incr i;
-      done;;
+      done;!touche;;
 
 (* Fonctions d'affichage *)
 
