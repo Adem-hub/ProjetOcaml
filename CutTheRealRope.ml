@@ -8,7 +8,7 @@ open Sys;;
 
 (* Constantes *)
 
-(* lien du fichier à modifier *)
+(* lien du fichier: à modifier *)
 let working_path = "C:\\Users\\thoma\\OneDrive\\Bureau\\ProjetOcaml-main\\";;
 (* technique *)
 let bounce       = 40;;
@@ -74,7 +74,7 @@ type 'a tableau_dynamique = {size   : unit      -> int;
                              add    : 'a        -> unit;
                              remove : int       -> unit};;
 
-(* initialisation pour le tableau dynamique : créer un tableau de taille nulle typé grâce à default
+(* initialisation pour le tableau dynamique : créer un tableau de taille nulle typé grâce à 'default'
 note: default ne sera pas dans le tableau *)
 let make_tab default =
    let taille  = ref 0 
@@ -109,9 +109,33 @@ type niveau = {points : point tableau_dynamique;
                picks  : pick tableau_dynamique};;
 
 
-(* Fonctions outils *)
+(* Fonctions outils / de vérification *)
 
 let distance x1 y1 x2 y2 = sqrt ((x1 -. x2)**2. +. (y1 -. y2)**2.);;
+
+(* fonction qui compte le numbre de niveau dans les fichiers *)
+let get_levels () =
+	let level  = ref 0
+	and x      = ref 45
+	and y      = ref 650 
+	and tab    = ref (make_tab (0,0)) in
+	let levels = make_tab (!tab) in
+		while (Sys.file_exists (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int !level) ^ ".niv")) do
+			(!tab).add (!x, !y);
+			x := !x+ 180;
+			if !x >= 720 then begin
+				x := 45;
+				y := !y - 170
+				end;
+			if !y <= 100 then begin
+				y := 650;
+				levels.add (!tab);
+				tab := make_tab (0,0);
+				end;
+			incr level;
+			done;
+			levels.add (!tab);
+			levels;;
 
 (* la fonction renvoie l'id du lien "touché" et -1 si aucun lien n'est "touché"
 note: "touché" correspond à la souris dans le carré décrit par les coordonnées des extémités du liens à une sensibilité près*)
@@ -138,8 +162,8 @@ let contact_lien liens =
 	done;
 	!id;;
 
-(* Vérifie si le hamburger est sortie de l'écran
-note: la sortie de l'écran est considéré plus loin pour que la balle sorte réellement de l'écran *)
+(* fonction qui vérifie si le hamburger est sortie de l'écran
+note: la sortie de l'écran est considéré plus loin pour que la balle sorte réellement de l'écran, ie froller le bord est accepté *)
 let out_screen x y =
 	let test = ref false in
 	if int_of_float y > hauteur + 100 then
@@ -152,7 +176,7 @@ let out_screen x y =
 		test := true;
 	!test;;
 
-(* Vérifie si le hamburger est sur Marcus (le dinosaure)
+(* fonction qui vérifie si le hamburger est sur Marcus (le dinosaure)
 note: on vérifie si le hamburger est dans un carré centré sur marcus sur lui qui fait ça taille et le diamètre de la balle de coté *)
 let touch_marcus x y =
 	if (180. -. x) *. (290. -. x) <= 0. && (90. -. y) *. (200. -. y) <= 0. then
@@ -160,10 +184,31 @@ let touch_marcus x y =
 	else
 		false;;
 
+(* fonction qui vérifie si la ball est en collision avec une ligne de piques *)
+let picks_collision picks x y = 
+    let touche = ref false
+    and i = ref 0 in
+    while !i < picks.size() && !touche = false do 
+			let xi = float_of_int (picks.id !i).xi
+			and xf = float_of_int (picks.id !i).xf
+			and yi = float_of_int (picks.id !i).yi
+			and yf = float_of_int (picks.id !i).yf in 
+			if xi = xf && abs_float(x -. xi) < 35. && (y -. yi) *. (y -. yf) <= 0. then 
+				begin 
+				touche := true;
+				end;
+			if yi = yf && abs_float(y -. yi) < 35. && (x -. xi) *. (x -. xf) <= 0. then 
+				begin 
+				touche := true;
+				end;
+			incr i;
+      done;
+      !touche;;
+
 
 (* Fonction d'update *)
 
-(* Fonction qui calcules les coordonnées des points à t + delta_t *)
+(* fonction qui calcules les coordonnées des points à t + delta_t *)
 let update_pts points =
 	for i = 0 to points.size () - 1 do
 		if (points.id i).pinned = false then
@@ -178,7 +223,7 @@ let update_pts points =
 			end;
 	done;;
 
-(* Fonction qui actualise les liens afin qu'il garde la bonne distance: lien_unit *)
+(* fonction qui actualise les liens afin qu'il garde la bonne distance: lien_unit *)
 let update_liens liens= 
 	for  i = 0 to liens.size () - 1 do
 		let dx         = (liens.id i).fin.x -. (liens.id i).debut.x 
@@ -200,7 +245,8 @@ let update_liens liens=
 				end;
 		done;;
 
-(* Fonction vérifiant si une corde non utilisée doit-être activée, si oui la corde sera alors créée *)
+(* fonction vérifiant si une corde non utilisée doit-être activée, si oui la corde sera alors créée
+note: dans update car actualise la liste des cordes *)
 let check_rope points liens ropes =
 	for i = 0 to ropes.size () - 1 do
 		if (ropes.id i).used = false then
@@ -233,26 +279,6 @@ let check_rope points liens ropes =
 			end;
 	done;;
 
-let picks_collision picks x y = 
-    let touche = ref false
-    and i = ref 0 in
-    while !i < picks.size() && !touche = false do 
-			let xi = float_of_int (picks.id !i).xi
-			and xf = float_of_int (picks.id !i).xf
-			and yi = float_of_int (picks.id !i).yi
-			and yf = float_of_int (picks.id !i).yf in 
-			if xi = xf && abs_float(x -. xi) < 35. && (y -. yi) *. (y -. yf) <= 0. then 
-				begin 
-				touche := true;
-				end;
-			if yi = yf && abs_float(y -. yi) < 35. && (x -. xi) *. (x -. xf) <= 0. then 
-				begin 
-				touche := true;
-				end;
-			incr i;
-      done;
-      !touche;;
-
 
 (* Fonctions d'affichage *)
 
@@ -273,8 +299,8 @@ let draw_dino x y dir =
 	fill_circle x (y + 110) 20;
 	set_color (rgb 91 199 176);
 	fill_poly [|((x - dir * 40), y);
-					((x - dir * 60), y);
-					((x - dir * 40), (y + 20))|];
+                    ((x - dir * 60), y);
+                    ((x - dir * 40), (y + 20))|];
 	fill_rect (x -40) y 80 80;
 	fill_rect (x - 25) (y - 20) 10 20;
 	fill_rect (x + 15) (y - 20) 10 20;
@@ -382,7 +408,7 @@ let print_liens liens =
 	done;
 	set_line_width 1;;
 
-(* fonction qui affiche le hamburger *)
+(* fonction qui affiche le hamburger (en jeu) *)
 let print_ball ball x y =
 	let x_reel = int_of_float (x -. 30.)
 	and y_reel = int_of_float (y -. 30.) in
@@ -403,6 +429,7 @@ let print_ropes ropes point =
 			end;
 	done;;
 
+(* fonction qui affiche les piques en prenant compte du sens *)
 let draw_picks picks imgs = 
 	for i = 0 to (picks.size() - 1) do
 		if (picks.id i).xi = (picks.id i).xf then
@@ -429,9 +456,35 @@ let draw_picks picks imgs =
 			end;
 	done;;
 
+(* fonction d'affichage du menu *)
+let display_levels levels page bg l_arrow r_arrow frame =
+	draw_image bg.data 0 0;
+	let tab    = (levels.id page) in
+	for i = 0 to tab.size() - 1 do
+		let x, y   = (tab.id i) 
+		and numero = string_of_int(i + page*15) in
+			draw_image frame.data x y;
+			set_text_size 60;
+			set_font "Times";
+			if i + page * 15 <10 then
+				begin
+				moveto (x+62) (y+45);
+				draw_string numero
+				end
+			else
+				begin
+				moveto (x+52) (y+45);
+				draw_string numero;
+				end;
+			set_color (rgb 198 123 0);
+		done;
+		draw_image l_arrow.data 190 30 ;
+		draw_image r_arrow.data 530 30 ;;
+
+
 (* Fonctions d'importation *)
 
-(* Fonction qui permet d'importer un image au format .brc (cf. documentation du projet) et en fait un type image
+(* fonction qui permet d'importer un image au format .brc (cf. documentation du projet) et en fait un type image
 note: nécessite la fenêtre utilisée déjà ouverte pour la fonction make_image de Graphics *)
 let load_brc relative_link =
 	let file  = open_in (working_path ^ relative_link ^ ".brc") in
@@ -455,7 +508,7 @@ let load_brc relative_link =
 		close_in file;
   		{data = make_image pre_image; height = height; width = width};;
 
-(* Fonction qui permet d'importer un gif sous forme de plusiseurs .brc (cf. documentation du projet) et en fait un type gif
+(* fonction qui permet d'importer un gif sous forme de plusiseurs .brc (cf. documentation du projet) et en fait un type gif
 note: nécessite la fenêtre utilisée déjà ouverte pour la fonction load_brc *)
 let load_brc_set frames relative_link =
 	let empty_image = {data = make_image [|[|-1|]|]; height = 0; width = 0} in
@@ -467,7 +520,7 @@ let load_brc_set frames relative_link =
 	done;
 	gif_image;;
 
-(* Fonction qui import un niveau de format .niv (cf. documentation du projet / Readme creation level) *)
+(* fonction qui import un niveau de format .niv (cf. documentation du projet / Readme creation level) *)
 let load_level id =
 	let file   = open_in (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int id) ^ ".niv")
 	and points = make_tab {x = 0.; y = 0.; oldx = 0.; oldy = 0.; pinned = false}
@@ -509,89 +562,42 @@ let load_level id =
 
 (* Jeu *)
 
-(* Gestion Niveaux *)
-
-let set_levels () =
-	let level  = ref 0
-	and x      = ref 45
-	and y      = ref 650 
-	and tab    = ref (make_tab (0,0)) in
-	let levels = make_tab (!tab) in
-		while (Sys.file_exists (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int !level) ^ ".niv")) do
-			(!tab).add (!x, !y);
-			x := !x+ 180;
-			if !x >= 720 then begin
-				x := 45;
-				y := !y - 170
-				end;
-			if !y <= 100 then begin
-				y := 650;
-				levels.add (!tab);
-				tab := make_tab (0,0);
-				end;
-			incr level;
-			done;
-			levels.add (!tab);
-			levels;;
-
-let display_levels levels page bg l_arrow r_arrow frame =
-	draw_image bg.data 0 0;
-	let tab    = (levels.id page) in
-	for i = 0 to tab.size() - 1 do
-		let x, y   = (tab.id i) 
-		and numero = string_of_int(i + page*15) in
-			draw_image frame.data x y;
-			set_text_size 60;
-			set_font "Times";
-			if i + page * 15 <10 then
-				begin
-				moveto (x+62) (y+45);
-				draw_string numero
-				end
-			else
-				begin
-				moveto (x+52) (y+45);
-				draw_string numero;
-				end;
-			set_color (rgb 198 123 0);
-		done;
-		draw_image l_arrow.data 190 30 ;
-		draw_image r_arrow.data 530 30 ;;
-
-
+(* fonction de détection de clique sur les niveaux dans le menu *)
 let detect_level levels page = 
 	let tab = (levels.id page)
 	and lvl = ref (-1) in
-		for i = 0 to tab.size() - 1 do
-			let x, y   = (tab.id i)
-			and px, py = mouse_pos() in
-				if (px >= x && px <= x + 150 && py >= y && py <= y + 150) && button_down () then
-					begin
-					lvl := i + 15 * page;
-					end;
+	for i = 0 to tab.size() - 1 do
+		let x, y   = (tab.id i)
+		and px, py = mouse_pos() in
+		if (px >= x && px <= x + 150 && py >= y && py <= y + 150) && button_down () then
+			begin
+			lvl := i + 15 * page;
+			end;
 	done;
 	!lvl;;
 
-let change_page page bool max= 
+(* fonction qui gère le changement de page *)
+let change_page page booleen max = 
 	let px, py = mouse_pos() 
 	and coords = [|190;530|]  in 
-		for i = 0 to 1 do 
-			if (px >= coords.(i) && px <= coords.(i) + 74 && py >= 30 && py <= 60) then
-					begin
-					if button_down () && not (!bool) then 
-					   begin
-						bool := true;
-						if i = 0 && !page > 0 then 
-							decr page;
-						if i = 1 && !page < max then
-							incr page;
+	for i = 0 to 1 do 
+		if (px >= coords.(i) && px <= coords.(i) + 74 && py >= 30 && py <= 60) then
+		begin
+		if button_down () && not (!booleen) then 
+			begin
+			bool := true;
+			if i = 0 && !page > 0 then 
+				decr page;
+			if i = 1 && !page < max then
+				incr page;
 							
-						end;
-					if not(button_down ()) && (!bool) then
-						bool := false;
-					end;
-		done;;
+			end;
+		if not(button_down ()) && (!bool) then
+			bool := false;
+		end;
+	done;;
 
+(* fonction qui gère le menu *)
 let niveaux bg frame r_arrow l_arrow = 
 	let levels_tab    = set_levels ()
 	and page          = ref 0 
@@ -609,7 +615,7 @@ let niveaux bg frame r_arrow l_arrow =
 		done;
 		!level;;
 
-(* Fonction principale gère le fonctionnement pendant une partie *)
+(* fonction qui gère le fonctionnement pendant une partie *)
 let partie niveau marcus ball slice point spikes back front = 
 	set_font "Liberation-18:antialias=false";
 	let is_win       = ref false
@@ -653,7 +659,7 @@ let partie niveau marcus ball slice point spikes back front =
 				clear_graph ();
 				end;
 			(* checks *)
-			if button_down () && Sys.time () -. (!delay) > 0.25 then
+			if button_down () && Sys.time () -. (!delay) > 0.2 then
 				begin
 				let indice = contact_lien niveau.liens in
 				if indice <> -1 then
@@ -680,7 +686,7 @@ let partie niveau marcus ball slice point spikes back front =
 		done;
 		!is_win;;
 
-(* Fonction de gestion de la page de transition *)
+(* fonction de gestion de la page de transition *)
 let level_transition marcus bg result niveau =
 	let en_cours   = ref true
 	and frame      = ref 0
@@ -756,7 +762,7 @@ let level_transition marcus bg result niveau =
 
 (* Main *)
 
-(* Fonction de lancement *)
+(* fonction de lancement *)
 let main =
 	(* ouverture de la fenêtre *)
 	let dimension = (string_of_int largeur) ^ "x" ^ (string_of_int hauteur) in
