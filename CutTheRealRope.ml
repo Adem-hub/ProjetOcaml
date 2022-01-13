@@ -233,6 +233,22 @@ let check_rope points liens ropes =
 			end;
 	done;;
 
+let pics_collision pics x y = 
+    let touche = ref false
+    and i = ref 0 in
+    while !i < pics.size() && !touche = false do 
+			let xi = float_of_int (pics.id !i).xi
+			and xf = float_of_int (pics.id !i).xf
+			and yi = float_of_int (pics.id !i).yi
+			and yf = float_of_int (pics.id !i).yf in 
+			if (xi -. x) *. (xf -. x) <= 0. && (yi -. y) *. (yf -. y) <= 0. then 
+				begin 
+				touche := true;
+				print_string "hello";
+				print_newline();
+				end;
+			incr i;
+      done;;
 
 (* Fonctions d'affichage *)
 
@@ -383,6 +399,31 @@ let print_ropes ropes point =
 			end;
 	done;;
 
+let draw_pics pics im1 im2 = 
+	for i = 0 to (pics.size() - 1) do
+		if (pics.id i).xi = (pics.id i).xf then
+			begin
+			let dist = abs ( (pics.id i).yi - (pics.id i).yf )
+			and j = ref 0
+			and x = (pics.id i).xi
+			and y = (pics.id i).yi in
+				for i = 0 to dist/20 - 1 do
+					draw_image im1.data x (y + !j*20);
+					incr j;
+				done;
+			end
+		else
+			begin
+			let dist = abs ( (pics.id i).xi - (pics.id i).xf )
+			and j = ref 0
+			and x = (pics.id i).xi
+			and y = (pics.id i).yi in
+				for i = 0 to dist/20 - 1 do
+					draw_image im2.data (x + !j*20) y;
+					incr j;
+				done;
+			end;
+	done;;
 
 (* Fonctions d'importation *)
 
