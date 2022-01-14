@@ -6,6 +6,8 @@ D'abord, il est important qu'avant de lancer le jeu, vous ouvrez une première f
 
 ![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/7c2606d0c6c1fed453adc4f634b43d8b3fffc606/Captures%20du%20jeu/Working_Path.PNG)
 
+Nous vous conseillons aussi, si vous avez le temps de consulter le fichier `Reedme_level_creation.txt` pour créer vos propres niveaux (en plus pas besoins de relancer le jeu pour en ajouter un).
+
 ## Présentation du jeu
 
 Notre jeu se base sur Cut The Rope, un jeu Android/IOS créer par ZeptoLab. Le principe est simple faire manger un objet (un bonbon dans le jeu d'origine et un hamburger dans le notre) à un dinosaure.
