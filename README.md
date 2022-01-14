@@ -2,7 +2,7 @@
 
 ## Préambule
 
-D'abord, il est important qu'avant de lancer le jeu, vous ouvrez une première fois le fichier et y changez la variable 'working_path' pour le chemin du dossier où a été dézippé le jeu. Pensez bien à remplacer les `\` par `\\` et d'en ajouter un à la fin comme dans l'exemple.
+D'abord, il est important qu'avant de lancer le jeu, vous ouvrez une première fois le fichier et y changez la variable `working_path` pour le chemin du dossier où a été dézippé le jeu. Pensez bien à remplacer les `\` par `\\` et d'en ajouter un à la fin comme dans l'exemple.
 
 ![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/7c2606d0c6c1fed453adc4f634b43d8b3fffc606/Captures%20du%20jeu/Working_Path.PNG)
 
