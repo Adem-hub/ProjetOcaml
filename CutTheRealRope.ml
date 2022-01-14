@@ -646,8 +646,8 @@ let partie niveau marcus ball slice point spikes back front =
 				draw_image back.data 0 0;				
 				draw_image marcus.imgs.(!marcus_frame).data 160 70;
 				print_ropes niveau.ropes point;
-				draw_picks niveau.picks spikes;
 				print_liens niveau.liens;
+				draw_picks niveau.picks spikes;
 				print_ball ball (niveau.points.id 0).x (niveau.points.id 0).y;
 				draw_image front.data 0 0;
 				if button_down () then
