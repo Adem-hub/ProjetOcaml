@@ -560,7 +560,7 @@ let load_level id =
           		{points = points; liens  = liens; ropes  = ropes; picks  = picks};;
 
 
-(* Jeu *)
+(* Fonction de gestion du jeu *)
 
 (* fonction de détection de clique sur les niveaux dans le menu *)
 let detect_level levels page = 
