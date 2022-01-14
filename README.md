@@ -16,7 +16,7 @@ Notre jeu se base sur Cut The Rope, un jeu Android/IOS créer par ZeptoLab. Le p
 
 Lors du lancement du jeu, vous deverez attendre un chargement d'environ 1/1.5 minutes, cependant pas d'inquiètude vous pourrez soit vous laisser emporter par le récit de Marcus afin d'en apprendre plus sur la back-story de jeu, ou bien jouer au mini-jeu proposé (ce dernier ce jouant avec les touches 'a' pour aller à gauche et 'e' pour aller à droite et dont le but est de manger le plus de hamburger possible, notre record est de 23). On notera que cela reste un mini-jeu et le chargement prime sur ce dernier, ainsi il freeze en fin de chargement d'un fichier.
 
-
+![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/9cb564be4db2ccb528b6bd9d0445db36bb4f2106/Captures%20du%20jeu/Chargement.PNG)
 
 ## Physique
 
