@@ -44,6 +44,9 @@ let x_burger = ref 500;;
 let dir      = ref 1;;
 let score    = ref 0;;
 
+(* ajustement si non windows *)
+let not_win32_dx = if Sys.unix then ref 0 else ref 10;;
+
 
 (* Types *)
 
@@ -355,40 +358,68 @@ let chargement pourcentage fichier =
 	set_color couleur;
 	fill_rect 0 0 largeur hauteur;
 	set_color white;
-	set_text_size 12;
+	if Sys.unix then
+		begin
+		set_text_size 12;
+		end
+	else
+		begin
+		not_win32_dx := 36;
+		end;
 	moveto 10 30;
 	draw_string fichier;
-	set_text_size 40;
-	moveto 525 30;
+	if Sys.unix then
+		begin
+		set_text_size 40;
+		end
+	else
+		begin
+		not_win32_dx := 120;
+		end;
+	moveto (525 + !not_win32_dx) 30;
 	draw_string "Loading...";
-	set_text_size 14;
-	moveto 110 800;
+	if Sys.unix then
+		begin
+		set_text_size 14;
+		end
+	else
+		begin
+		not_win32_dx := 42;
+		end;
+	moveto (110 + !not_win32_dx) 800;
 	draw_string "This story is about Marcus, a small and hungry dinosaur. Marcus was";
-	moveto 110 750;
+	moveto (110 + !not_win32_dx) 750;
 	draw_string "walking in the forest and lost himself. He isn't so worried about";
-	moveto 110 700;
+	moveto (110 + !not_win32_dx) 700;
 	draw_string "finding his way home. Perhaps, as a dinosaur, Marcus got a fine sense";
-	moveto 110 650;
+	moveto (110 + !not_win32_dx) 650;
 	draw_string "of smell. But something still bothers him; he hasn't eaten in a while.";
-	moveto 110 600;
+	moveto (110 + !not_win32_dx) 600;
 	draw_string "He starts looking around and arrives near a montain. There, Marcus was";
-	moveto 110 550;
+	moveto (110 + !not_win32_dx) 550;
 	draw_string "surprised to see a wood escalator. Were escalators growing in trees,";
-	moveto 110 500;
+	moveto (110 + !not_win32_dx) 500;
 	draw_string "perhaps not it was a sign of life. Marcus uses it to climb the montane";
-	moveto 110 450;
+	moveto (110 + !not_win32_dx) 450;
 	draw_string "and see the beautiful old house where you live. He knocks on the door.";
-	moveto 110 400;
+	moveto (110 + !not_win32_dx) 400;
 	draw_string "You open and see this desperate dinosaur. You grab your magic wand, which";
-	moveto 110 350;
+	moveto (110 + !not_win32_dx) 350;
 	draw_string "can cut any rope at any distance, and help him get a pleasant dinner.";
-	moveto 275 300;
+	moveto (260 + !not_win32_dx) 300;
 	draw_string "a to go left | e to go right";
 	let charge = int_of_float (float_of_int largeur *. pourcentage)
 	and scor = "Score : " ^ (string_of_int(!score)) in
 	fill_rect 0 0 charge 20;
-	set_text_size 30;
-	moveto 600 940;
+	if Sys.unix then
+		begin
+		set_text_size 30;
+		end
+	else
+		begin
+		not_win32_dx := 90;
+		end;
+	moveto (600 + !not_win32_dx) 940;
 	set_color white;
 	draw_string scor;
 	mini_jeu ();
@@ -466,8 +497,11 @@ let display_levels levels page bg l_arrow r_arrow frame =
 		let x, y   = (tab.id i) 
 		and numero = string_of_int(i + page*16) in
 			draw_image frame.data x y;
-			set_text_size 60;
-			set_font "Times";
+			if Sys.unix then
+				begin
+				set_text_size 60;
+				set_font "Times";
+				end;
 			if i + page * 15 <10 then
 				begin
 				moveto (x+62) (y+45);
@@ -618,8 +652,11 @@ let niveaux bg frame r_arrow l_arrow =
 		!level;;
 		
 (* fonction qui gère le fonctionnement pendant une partie *)
-let partie niveau marcus ball slice point spikes back front = 
-	set_font "Liberation-18:antialias=false";
+let partie niveau marcus ball slice point spikes back front =
+	if Sys.unix then
+		begin
+		set_font "Liberation-18:antialias=false";
+		end;
 	let is_win       = ref false
 	and en_jeu       = ref true
 	and marcus_frame = ref 0
@@ -721,7 +758,10 @@ let level_transition marcus bg result niveau =
 			begin
 			draw_rect 475 200 275 100;
 			end;
-		set_text_size 24;
+		if Sys.unix then
+			begin
+			set_text_size 24;
+			end;
 		if result = true then
 			begin
 			moveto 375 500;
@@ -778,31 +818,39 @@ let level_transition marcus bg result niveau =
 (* fonction de lancement *)
 let main =
 	(* ouverture de la fenêtre *)
-	let dimension = (string_of_int largeur) ^ "x" ^ (string_of_int hauteur) in
-	open_graph dimension;
+	if Sys.win32 then
+		begin
+		let dimension = (string_of_int largeur) ^ "x" ^ (string_of_int hauteur) in
+		open_graph dimension;
+		end
+	else
+		begin
+		open_graph "";
+		resize_window largeur hauteur;
+		end;
 	auto_synchronize false;
 	display_mode false;
 	(* écran de chargement *)
-	let slice   = load_brc_set 7 "Images\\Effects\\Slice"
-	and ball    = load_brc "Images\\Ball\\Ball"
-	and point   = load_brc "Images\\Point\\Point"
-	and spike_h = load_brc "Images\\Spike\\Spike_h"
-	and spike_v = load_brc "Images\\Spike\\Spike_v"
-	and back    = load_brc "Images\\Decor\\Back"
-	and front   = load_brc "Images\\Decor\\Front" 
-	and char1   = load_brc_set 5 "Images\\Dragon\\Waiting"
-	and char2   = load_brc_set 5 "Images\\Dragon\\Win"
-	and char3   = load_brc_set 4 "Images\\Dragon\\Loose"
+	let slice      = load_brc_set 7 "Images\\Effects\\Slice"
+	and ball       = load_brc "Images\\Ball\\Ball"
+	and point      = load_brc "Images\\Point\\Point"
+	and spike_h    = load_brc "Images\\Spike\\Spike_h"
+	and spike_v    = load_brc "Images\\Spike\\Spike_v"
+	and back       = load_brc "Images\\Decor\\Back"
+	and front      = load_brc "Images\\Decor\\Front" 
+	and char1      = load_brc_set 5 "Images\\Dragon\\Waiting"
+	and char2      = load_brc_set 5 "Images\\Dragon\\Win"
+	and char3      = load_brc_set 4 "Images\\Dragon\\Loose"
 	and bgLevel    = load_brc "Images\\Menu\\Backlvl"
 	and frameLevel = load_brc "Images\\Menu\\CadreLvl"
 	and r_arrow    = load_brc "Images\\Menu\\FlecheDroite" 
 	and l_arrow    = load_brc "Images\\Menu\\FlecheGauche" in
-	let marcus  = [|char1; char2; char3|]
-	and spikes  = [|spike_h; spike_v|]
+	let marcus     = [|char1; char2; char3|]
+	and spikes     = [|spike_h; spike_v|]
 	(* Constante de jeu *)
-	and level     = ref 0 
-	and menu      = ref false
-	and in_game   = ref true in
+	and level      = ref 0 
+	and menu       = ref false
+	and in_game    = ref true in
 		(* boucle du jeu *)
 		while !in_game do
 			let niveau   = load_level !level in
@@ -822,3 +870,4 @@ let main =
 				close_graph();
 				end;
 		done;;
+		
