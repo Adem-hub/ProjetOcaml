@@ -24,15 +24,21 @@ Ensuite lors de la partie il faudra donner le hamburger à Marcus.
 
 Cependant des piques que le hamburger devra éviter vous compliquerons rapidement la tâche.
 
-![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/9cb564be4db2ccb528b6bd9d0445db36bb4f2106/Captures%20du%20jeu/Chargement.PNG)
+![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/c7ea7e053627fa3e7232d3355b1e467b2ccb884c/Captures%20du%20jeu/Spikes_Example.PNG)
 
-## Physique
+Après votre premier niveau jouer (et même pas besoin de gagner) vous aurez la possibilité d'accèder au menu, par le biais de ce dernier vous aurez accès à plein de niveaux (et même aussi les votre si vous en créer).
+
+![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/c7ea7e053627fa3e7232d3355b1e467b2ccb884c/Captures%20du%20jeu/Spikes_Example.PNG)
+
+## Développement et enjeux du projet
+
+### La physique
 
 Tout d’abord il fallait simuler la physique des cordes. Afin de se faire, nous avons décidé d’employer une méthode appelée “Verlet’s integration”
 (suite à de nombreuses autres idées abandonnées) qui est une alternative à la méthode d’Euler:
 [explication de la méthode en détail](https://fr.wikipedia.org/wiki/Int%C3%A9gration_de_Verlet).
 
-## Stockage des données
+### Le stockage des données
 
 Pour notre projet deux types d’objet on dû être stocké:
 des images ou des gifs (sous forme de png sequence)
@@ -70,7 +76,7 @@ Ainsi, le type tableau dynamique est un array à taille variable utilisant 4 mé
 - Tab.remove id, retire du tableau la valeur en id;
 - Tab.size (), retourne la longueur utilisé du tableau (le tableau étant éventuellement plus long en mémoire).
 
-## L'esthétique
+### L'esthétique
 
 Lors du processus de création l’apparence du code aussi bien que du jeu a été soigné. Ce dernier se divise en section afin que par le nom de la section et de la fonction son utilité soit le plus limpide possible.
 
