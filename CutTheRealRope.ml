@@ -1,18 +1,25 @@
 (* Import *)
+
 #load "graphics.cma";;
+#load "unix.cma";;
 open Graphics;;
 open Array;;
 open Sys;;
+
+
 (* Constantes *)
+
 (* lien du fichier: à modifier *)
 let working_path = "C:\\Users\\thoma\\OneDrive\\Bureau\\ProjetOcaml-main\\";;
+
 (* technique *)
 let bounce       = 40;;
 let lien_unit    = 5.;;
 let sensibility  = 10.;;
 let delta_t      = 0.01;;
 let delta2_t     = delta_t *. delta_t;;
-let scale        = 280.;;
+let scale        = 240.;;
+
 (* physique *)
 let pi           = acos (-1.);;
 let g            = -9.81;;
@@ -21,42 +28,56 @@ let masse_ball   = 0.200;;
 let masse_lien   = 0.02;;
 let k_ball       = (1. /. masse_ball) *. 6. *. (30. /. scale) *. pi *. visco_air;;
 let k_corde      = (1. /. masse_lien) *. 6. *. (1.5 /. scale) *. pi *. visco_air;;
+
 (* graphique *)
 let color_lien1  = rgb 125 80 55;;
 let color_lien2  = rgb 220 150 90;;
 let hauteur      = 1000;;
 let largeur      = 800;;
+
+
 (* Variables globales *)
+
 (* mini-jeu *)
 let x_dino   = ref 100;;
 let x_burger = ref 500;;
 let dir      = ref 1;;
 let score    = ref 0;;
+
+
 (* Types *)
+
 type img    = {data   : image;
                height : int;
                width  : int};;
+	       
 type gif    = {imgs   : img array;
                frames : int};;
+	       
 type point  = {mutable x      : float;
                mutable y      : float;
                mutable oldx   : float;
                mutable oldy   : float;
                mutable pinned : bool};;
+	       
 type stick  = {mutable debut    : point;
                mutable fin      : point};;
+	       
 type rope   = {x_c          : float;
                y_c          : float;
                len          : int;
                mutable used : bool};;
+	       
 type pick   = {xi : int;
                yi : int;
                xf : int;
                yf : int};;
+	       
 type 'a tableau_dynamique = {size   : unit      -> int;
                              id     : int       -> 'a;
                              add    : 'a        -> unit;
                              remove : int       -> unit};;
+			     
 (* initialisation pour le tableau dynamique : créer un tableau de taille nulle typé grâce à 'default'
 note: default ne sera pas dans le tableau *)
 let make_tab default =
@@ -89,8 +110,12 @@ type niveau = {points : point tableau_dynamique;
                liens  : stick tableau_dynamique;
                ropes  : rope tableau_dynamique;
                picks  : pick tableau_dynamique};;
+	       
+	       
 (* Fonctions outils / de vérification *)
+
 let distance x1 y1 x2 y2 = sqrt ((x1 -. x2)**2. +. (y1 -. y2)**2.);;
+
 (* fonction qui compte le numbre de niveau dans les fichiers *)
 let get_levels () =
 	let level  = ref 0
@@ -114,6 +139,7 @@ let get_levels () =
 			done;
 			levels.add (!tab);
 			levels;;
+			
 (* la fonction renvoie l'id du lien "touché" et -1 si aucun lien n'est "touché"
 note: "touché" correspond à la souris dans le carré décrit par les coordonnées des extémités du liens à une sensibilité près*)
 let contact_lien liens =
@@ -138,6 +164,7 @@ let contact_lien liens =
 			id := i;
 	done;
 	!id;;
+	
 (* fonction qui vérifie si le hamburger est sortie de l'écran
 note: la sortie de l'écran est considéré plus loin pour que la balle sorte réellement de l'écran, ie froller le bord est accepté *)
 let out_screen x y =
@@ -151,6 +178,7 @@ let out_screen x y =
 	if int_of_float x < -100 then
 		test := true;
 	!test;;
+	
 (* fonction qui vérifie si le hamburger est sur Marcus (le dinosaure)
 note: on vérifie si le hamburger est dans un carré centré sur marcus sur lui qui fait ça taille et le diamètre de la balle de coté *)
 let touch_marcus x y =
@@ -178,8 +206,11 @@ let picks_collision picks x y =
 			incr i;
       done;
       !touche;;
+      
+      
 (* Fonction d'update *)
 (* fonction qui calcules les coordonnées des points à t + delta_t *)
+
 let update_pts points =
 	for i = 0 to points.size () - 1 do
 		if (points.id i).pinned = false then
@@ -193,6 +224,7 @@ let update_pts points =
 			(points.id i).y    <- (points.id i).y +. vy *. (1. -. coef *. delta2_t) +. g *. delta2_t *. scale;
 			end;
 	done;;
+	
 (* fonction qui actualise les liens afin qu'il garde la bonne distance: lien_unit *)
 let update_liens liens= 
 	for  i = 0 to liens.size () - 1 do
@@ -214,6 +246,7 @@ let update_liens liens=
 				(liens.id i).fin.y   <- (liens.id i).fin.y +. offset_y;
 				end;
 		done;;
+		
 (* fonction vérifiant si une corde non utilisée doit-être activée, si oui la corde sera alors créée
 note: dans update car actualise la liste des cordes *)
 let check_rope points liens ropes =
@@ -247,7 +280,10 @@ let check_rope points liens ropes =
 				end;
 			end;
 	done;;
+	
+	
 (* Fonctions d'affichage *)
+
 (* fonction qui dessine le dinosaure du mini-jeu *)
 let draw_dino x y dir =
 	set_color (rgb 16 117 95);
@@ -277,6 +313,7 @@ let draw_dino x y dir =
 		fill_rect (x + 10) (y + 60) 30 2
 	else
 		fill_rect (x - 40) (y + 60) 30 2;;
+		
 (* fonction qui dessine le hamburger du mini-jeu *)
 let draw_burger x y =
 	set_color (rgb 173 128 55);
@@ -286,6 +323,7 @@ let draw_burger x y =
 	fill_rect (x - 30) (y - 5) 60 10;
 	fill_circle (x - 30) y 5;
 	fill_circle (x + 30) y 5;;
+	
 (* fonction qui gère le mini jeu
 note: elle ne fait pas d'affichage mais est nécessaire à chargement d'où sa présence ici *)
 let mini_jeu () =
@@ -310,6 +348,7 @@ let mini_jeu () =
 		end;
 	draw_dino !x_dino 150 !dir;
 	draw_burger !x_burger 150;;
+	
 (* fonction qui affiche l'écran de chargement *)
 let chargement pourcentage fichier = 
 	let couleur = rgb 25 85 110 in
@@ -354,6 +393,7 @@ let chargement pourcentage fichier =
 	draw_string scor;
 	mini_jeu ();
 	synchronize ();;
+	
 (* fonction qui affiche les liens des cordes
 note: en utilisant un modulo pour la couleur lors de retrait de 1 liens les couleurs peuvent alterner,
 cependant cet effet est peu pérceptible et ne gène pas au déroulement de la partie, aussi il est ignoré *)
@@ -369,11 +409,13 @@ let print_liens liens =
 		lineto (int_of_float (liens.id i).fin.x) (int_of_float (liens.id i).fin.y);
 	done;
 	set_line_width 1;;
+	
 (* fonction qui affiche le hamburger (en jeu) *)
 let print_ball ball x y =
 	let x_reel = int_of_float (x -. 30.)
 	and y_reel = int_of_float (y -. 30.) in
 	draw_image ball.data x_reel y_reel;;
+	
 (* fonction qui affiche les points d'attache des cordes ainsi que les cercles de détection *)
 let print_ropes ropes point =
 	for i = 0 to ropes.size () - 1 do
@@ -388,6 +430,7 @@ let print_ropes ropes point =
 			draw_circle x y rayon;
 			end;
 	done;;
+	
 (* fonction qui affiche les piques en prenant compte du sens *)
 let draw_picks picks imgs = 
 	for i = 0 to (picks.size() - 1) do
@@ -414,6 +457,7 @@ let draw_picks picks imgs =
 				done;
 			end;
 	done;;
+	
 (* fonction d'affichage du menu *)
 let display_levels levels page bg l_arrow r_arrow frame =
 	draw_image bg.data 0 0;
@@ -438,7 +482,10 @@ let display_levels levels page bg l_arrow r_arrow frame =
 		done;
 		draw_image l_arrow.data 190 30 ;
 		draw_image r_arrow.data 530 30 ;;
+		
+		
 (* Fonctions d'importation *)
+
 (* fonction qui permet d'importer un image au format .brc (cf. documentation du projet) et en fait un type image
 note: nécessite la fenêtre utilisée déjà ouverte pour la fonction make_image de Graphics *)
 let load_brc relative_link =
@@ -462,6 +509,7 @@ let load_brc relative_link =
   		done;
 		close_in file;
   		{data = make_image pre_image; height = height; width = width};;
+		
 (* fonction qui permet d'importer un gif sous forme de plusiseurs .brc (cf. documentation du projet) et en fait un type gif
 note: nécessite la fenêtre utilisée déjà ouverte pour la fonction load_brc *)
 let load_brc_set frames relative_link =
@@ -473,6 +521,7 @@ let load_brc_set frames relative_link =
 		gif_image.imgs.(i-1) <- load_brc path;
 	done;
 	gif_image;;
+	
 (* fonction qui import un niveau de format .niv (cf. documentation du projet / Readme creation level) *)
 let load_level id =
 	let file   = open_in (working_path ^ "\\Niveau\\Niveau-" ^ (string_of_int id) ^ ".niv")
@@ -549,6 +598,7 @@ let change_page page booleen max =
 			bool := false;
 		end;
 	done;;
+	
 (* fonction qui gère le menu *)
 let niveaux bg frame r_arrow l_arrow = 
 	let levels_tab    = set_levels ()
@@ -577,6 +627,17 @@ let partie niveau marcus ball slice point spikes back front =
 	and frame_time   = ref (Sys.time ())
 	and main_time    = ref (Sys.time ())
 	and delay        = ref (Sys.time ())in
+		(* affichage pour le temps pre-niveau *)
+		draw_image back.data 0 0;				
+		draw_image marcus.imgs.(!marcus_frame).data 160 70;
+		print_ropes niveau.ropes point;
+		draw_picks niveau.picks spikes;
+		print_liens niveau.liens;
+		print_ball ball (niveau.points.id 0).x (niveau.points.id 0).y;
+		draw_image front.data 0 0;
+		synchronize ();
+		clear_graph ();
+		Unix.select [] [] [] 0.5;
 		while !en_jeu do
 			if (Sys.time ()) -. !main_time > delta_t then
 				begin
@@ -637,6 +698,7 @@ let partie niveau marcus ball slice point spikes back front =
 				end;
 		done;
 		!is_win;;
+		
 (* fonction de gestion de la page de transition *)
 let level_transition marcus bg result niveau =
 	let en_cours   = ref true
@@ -709,7 +771,10 @@ let level_transition marcus bg result niveau =
 			end;
 	done;
 	!menu;;
+	
+	
 (* Main *)
+
 (* fonction de lancement *)
 let main =
 	(* ouverture de la fenêtre *)
