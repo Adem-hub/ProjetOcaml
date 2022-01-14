@@ -18,9 +18,11 @@ Lors du lancement du jeu, vous deverez attendre un chargement d'environ 1/1.5 mi
 
 ![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/9cb564be4db2ccb528b6bd9d0445db36bb4f2106/Captures%20du%20jeu/Chargement.PNG)
 
-Ensuite lors de la partie il faudra donner le hamburger, sans que ce dernier touche les piques, à Marcus.
+Ensuite lors de la partie il faudra donner le hamburger à Marcus.
 
-![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/9cb564be4db2ccb528b6bd9d0445db36bb4f2106/Captures%20du%20jeu/Chargement.PNG)
+![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/a7b1ccfd436a1b1904840773ffd259feedbeaafb/Captures%20du%20jeu/Feed_Marcus.PNG)
+
+Cependant des piques que le hamburger devra éviter vous compliquerons rapidement la tâche.
 
 ![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/9cb564be4db2ccb528b6bd9d0445db36bb4f2106/Captures%20du%20jeu/Chargement.PNG)
 
