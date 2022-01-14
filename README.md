@@ -79,8 +79,15 @@ Ainsi, le type tableau dynamique est un array à taille variable utilisant 4 mé
 ### L'esthétique
 
 Lors du processus de création l’apparence du code aussi bien que du jeu a été soigné. Ce dernier se divise en section afin que par le nom de la section et de la fonction son utilité soit le plus limpide possible. La structure se décompose ainsi:
-- 
-- 
-- 
+- Imports
+- Constantes
+- Variables globales
+- Types
+- Fonctions outils / de vérification
+- Fonction d'update 
+- Fonctions d'affichage 
+- Fonctions d'importation
+- Fonction de gestion du jeu
+- Main (Luncher du jeu)
 
 Quant à l’apparence du jeu en tant que tel, nous avons voulu rester fidèle au jeu d’origine tout en apportant notre propre touche (l’histoire lors de l’écran de chargement met en place un univers différent avec un problématique similaire). Les écrans de chargement et de transition ont aussi reçu beaucoup d’attention, le premier étant très présent (le jeu met en effet une soixantaine de secondes à se lancer dû aux images à charger, par exemple les fichiers Back.brc et Front.brc qui font tous les deux 800.001 lignes). Ce dernier est donc accompagné d'un mini-jeu et d'un histoire à lire assez simples mais fonctionnels.
