@@ -28,7 +28,7 @@ Cependant des piques que le hamburger devra éviter vous compliquerons rapidemen
 
 Après votre premier niveau jouer (et même pas besoin de gagner) vous aurez la possibilité d'accèder au menu, par le biais de ce dernier vous aurez accès à plein de niveaux (et même aussi les votre si vous en créer).
 
-![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/c7ea7e053627fa3e7232d3355b1e467b2ccb884c/Captures%20du%20jeu/Spikes_Example.PNG)
+![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/6dbf8514092b76865950279578a3407c208a39aa/Captures%20du%20jeu/Menu.PNG)
 
 ## Développement et enjeux du projet
 
@@ -78,6 +78,9 @@ Ainsi, le type tableau dynamique est un array à taille variable utilisant 4 mé
 
 ### L'esthétique
 
-Lors du processus de création l’apparence du code aussi bien que du jeu a été soigné. Ce dernier se divise en section afin que par le nom de la section et de la fonction son utilité soit le plus limpide possible.
+Lors du processus de création l’apparence du code aussi bien que du jeu a été soigné. Ce dernier se divise en section afin que par le nom de la section et de la fonction son utilité soit le plus limpide possible. La structure se décompose ainsi:
+- 
+- 
+- 
 
 Quant à l’apparence du jeu en tant que tel, nous avons voulu rester fidèle au jeu d’origine tout en apportant notre propre touche (l’histoire lors de l’écran de chargement met en place un univers différent avec un problématique similaire). Les écrans de chargement et de transition ont aussi reçu beaucoup d’attention, le premier étant très présent (le jeu met en effet une soixantaine de secondes à se lancer dû aux images à charger, par exemple les fichiers Back.brc et Front.brc qui font tous les deux 800.001 lignes). Ce dernier est donc accompagné d'un mini-jeu et d'un histoire à lire assez simples mais fonctionnels.
