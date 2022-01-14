@@ -18,7 +18,7 @@ let lien_unit    = 5.;;
 let sensibility  = 10.;;
 let delta_t      = 0.01;;
 let delta2_t     = delta_t *. delta_t;;
-let scale        = 240.;;
+let scale        = 280.;;
 
 (* physique *)
 let pi           = acos (-1.);;
@@ -587,32 +587,32 @@ let change_page page booleen max =
 		begin
 		if button_down () && not (!booleen) then 
 			begin
-			bool := true;
+			booleen := true;
 			if i = 0 && !page > 0 then 
 				decr page;
 			if i = 1 && !page < max then
 				incr page;
 							
 			end;
-		if not(button_down ()) && (!bool) then
-			bool := false;
+		if not(button_down ()) && (!booleen) then
+			booleen := false;
 		end;
 	done;;
 	
 (* fonction qui gère le menu *)
 let niveaux bg frame r_arrow l_arrow = 
-	let levels_tab    = set_levels ()
+	let levels_tab    = get_levels ()
 	and page          = ref 0 
 	and level         = ref (-1) 
 	and time          = ref (Sys.time())
-	and bool          = ref false in
+	and booleen       = ref false in
 		while !level = (-1) do
 			display_levels levels_tab (!page) bg l_arrow r_arrow frame;
 			if Sys.time() -. !time > 1. then
 				begin
 				level := detect_level levels_tab (!page);
 				end;
-			change_page page bool (levels_tab.size() - 1);
+			change_page page booleen (levels_tab.size() - 1);
 			synchronize ();
 		done;
 		!level;;
