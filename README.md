@@ -6,6 +6,11 @@ D'abord, il est important qu'avant de lancer le jeu, vous ouvrez une première f
 
 ![This is an image](https://github.com/Adem-hub/ProjetOcaml/blob/7c2606d0c6c1fed453adc4f634b43d8b3fffc606/Captures%20du%20jeu/Working_Path.PNG)
 
+## Présentation du jeu
+
+Notre jeu se base sur Cut The Rope, un jeu Android/IOS créer par ZeptoLab. Le principe est simple faire manger un objet (un bonbon dans le jeu d'origine et un hamburger dans le notre) à un dinosaure.
+
+
 ## Physique
 
 Tout d’abord il fallait simuler la physique des cordes. Afin de se faire, nous avons décidé d’employer une méthode appelée “Verlet’s integration”
@@ -50,8 +55,8 @@ Ainsi, le type tableau dynamique est un array à taille variable utilisant 4 mé
 - Tab.remove id, retire du tableau la valeur en id;
 - Tab.size (), retourne la longueur utilisé du tableau (le tableau étant éventuellement plus long en mémoire).
 
-## Apparence
+## L'esthétique
 
 Lors du processus de création l’apparence du code aussi bien que du jeu a été soigné. Ce dernier se divise en section afin que par le nom de la section et de la fonction son utilité soit le plus limpide possible.
 
-Quant à l’apparence du jeu en tant que tel, nous avons voulu rester fidèle au jeu d’origine tout en apportant notre propre touche (l’histoire lors de l’écran de chargement met en place un univers différent avec un problématique similaire). Les écrans de chargement et de transition ont aussi reçu beaucoup d’attention, le premier étant très présent (le jeu met en effet une soixantaine de secondes à se lancer dû aux images à charger, par exemple les fichiers Back.brc et Front.brc qui font tous les deux 800.001 lignes). Ce dernier est donc accompagné d'un mini-jeu et d'un histoire à lire.
+Quant à l’apparence du jeu en tant que tel, nous avons voulu rester fidèle au jeu d’origine tout en apportant notre propre touche (l’histoire lors de l’écran de chargement met en place un univers différent avec un problématique similaire). Les écrans de chargement et de transition ont aussi reçu beaucoup d’attention, le premier étant très présent (le jeu met en effet une soixantaine de secondes à se lancer dû aux images à charger, par exemple les fichiers Back.brc et Front.brc qui font tous les deux 800.001 lignes). Ce dernier est donc accompagné d'un mini-jeu et d'un histoire à lire assez simples mais fonctionnels.
