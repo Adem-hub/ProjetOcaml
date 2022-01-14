@@ -1,8 +1,15 @@
 # DM programmation interface Ocaml : Cut The Rope
 
+## Préambule
+
+D'abord, il est important qu'avant de lancer le jeu, vous ouvrez une première fois le fichier et y changez la variable 'working_path' pour le chemin du dossier où a été dézippé le jeu. Pensez bien à remplacer les `\` par `\\` et d'en ajouter un à la fin comme dans l'exemple.
+
+![This is an image](https://myoctocat.com/assets/images/base-octocat.svg)
+
 ## Physique
 
-Tout d’abord il fallait simuler la physique des cordes. Afin de se faire, nous avons décidé d’employer une méthode appelée “Verlet’s integration” (suite à de nombreuses autres idées abandonnées) qui est une alternative à la méthode d’Euler:
+Tout d’abord il fallait simuler la physique des cordes. Afin de se faire, nous avons décidé d’employer une méthode appelée “Verlet’s integration”
+(suite à de nombreuses autres idées abandonnées) qui est une alternative à la méthode d’Euler:
 [explication de la méthode en détail](https://fr.wikipedia.org/wiki/Int%C3%A9gration_de_Verlet).
 
 ## Stockage des données
@@ -15,9 +22,13 @@ des niveaux
 
 Afin de gérer les images nous avons procédé ainsi:
 
-A l’aide de python, en particulier des modules PIL et numpy, nous avons transformé le format png en des fichiers txt en clair (format propre à notre programme le .brc, créé avec un programme personnel python assez simple [ici](https://colab.research.google.com/drive/18S-ul2-umBW8ydUtrBednBEv2MOYPWHJ?usp=sharing)). Les fichier brc se présentent sous le format suivant:
-La première ligne comporte les dimensions l’image “largeurxhauteur”.
-Les lignes suivantes contiennent les valeurs RGBA (“r g b a”):
+A l’aide de python, en particulier des modules PIL et numpy, nous avons transformé le format png en des fichiers txt en clair (format propre à notre programme le .brc,
+créé avec un programme personnel python assez simple [ici](https://colab.research.google.com/drive/18S-ul2-umBW8ydUtrBednBEv2MOYPWHJ?usp=sharing)).
+Les fichier brc se présentent sous le format suivant:
+
+1. La première ligne comporte les dimensions l’image “largeurxhauteur”.
+
+2. Les lignes suivantes contiennent les valeurs RGBA (“r g b a”):
 - R (quantité de rouge) de 0 à 255
 - G (quantité de vert) de 0 à 255
 - B (quantité de bleu) de 0 à 255
