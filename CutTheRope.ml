@@ -395,11 +395,11 @@ let chargement pourcentage fichier =
 	moveto (110 + !not_win32_dx) 650;
 	draw_string "of smell. But something still bothers him; he hasn't eaten in a while.";
 	moveto (110 + !not_win32_dx) 600;
-	draw_string "He starts looking around and arrives near a montain. There, Marcus was";
+	draw_string "He starts looking around and arrives near a mountain. There, Marcus was";
 	moveto (110 + !not_win32_dx) 550;
 	draw_string "surprised to see a wood escalator. Were escalators growing in trees,";
 	moveto (110 + !not_win32_dx) 500;
-	draw_string "perhaps not it was a sign of life. Marcus uses it to climb the montane";
+	draw_string "perhaps not it was a sign of life. Marcus uses it to climb the mountain";
 	moveto (110 + !not_win32_dx) 450;
 	draw_string "and see the beautiful old house where you live. He knocks on the door.";
 	moveto (110 + !not_win32_dx) 400;
